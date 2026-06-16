@@ -36,6 +36,8 @@ jobs:
         run: node tools/build-catalog.mjs
 
       - uses: actions/configure-pages@v5
+        with:
+          enablement: true
 
       - name: Upload site (static files + generated data/catalog.json)
         uses: actions/upload-pages-artifact@v3
