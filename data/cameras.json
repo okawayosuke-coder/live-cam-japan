@@ -1,0 +1,34 @@
+{
+  "_readme": "直リンク/自治体カメラのカタログ。cameras[] に追加したものだけ表示されます。imageタイプは表示前にブラウザが <img> で生存確認し、死んでいれば自動的に隠れます。捏造データは入れない方針のため、出典(sourceUrl)と利用許諾を確認したカメラのみ追加してください。",
+  "_schema": {
+    "id": "一意なID（任意）",
+    "title": "表示名（必須）",
+    "place": "地名など（任意）",
+    "region": "hokkaido|tohoku|kanto|chubu|kinki|chugoku|shikoku|kyushu（任意・lat/lngから自動判定も可）",
+    "category": "scenery|mountain|coast|river|road|city|weather|other（任意）",
+    "lat": "緯度（任意・あれば地図に表示）",
+    "lng": "経度（任意）",
+    "approxLocation": "true なら地図上で点線フチ表示（おおよその位置の意味・任意）",
+    "embedType": "image=静止画を定期更新 / iframe=埋め込みページ",
+    "imageUrl": "embedType=image のときの画像URL（クロスオリジン読み込み可能なもの）",
+    "embedUrl": "embedType=iframe のときの埋め込みURL",
+    "thumbUrl": "一覧サムネ（任意）",
+    "detailUrl": "元ページURL（任意）",
+    "credit": "出典・提供元（任意）",
+    "sourceUrl": "出典ページ（任意・利用許諾確認用）"
+  },
+  "_example_entry": {
+    "id": "example-river-1",
+    "title": "○○川 △△観測所",
+    "place": "○○県○○市",
+    "category": "river",
+    "lat": 35.0,
+    "lng": 139.0,
+    "embedType": "image",
+    "imageUrl": "https://example.org/livecam/latest.jpg",
+    "detailUrl": "https://example.org/livecam/",
+    "credit": "○○県 河川砂防課",
+    "sourceUrl": "https://example.org/"
+  },
+  "cameras": []
+}

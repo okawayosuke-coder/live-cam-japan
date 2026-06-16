@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>全国 動作中ライブカメラ｜Live Cam Japan</title>
+  <meta name="description" content="全国の「今まさに動作している」ライブカメラだけを集めて表示。YouTube Live・Windy・自治体カメラを統合し、ブラウザ側で生存確認します。">
+  <meta name="theme-color" content="#0b1220">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo">●</span>
+      <div>
+        <h1>全国 動作中ライブカメラ</h1>
+        <span class="sub">今ライブ中のカメラだけを表示</span>
+      </div>
+    </div>
+    <div class="controls">
+      <input id="fSearch" type="search" placeholder="地名・名称で検索…" autocomplete="off">
+      <select id="fRegion" title="地方"></select>
+      <select id="fCategory" title="カテゴリ"></select>
+      <select id="fSource" title="ソース">
+        <option value="all">全ソース</option>
+        <option value="youtube">YouTube</option>
+        <option value="windy">Windy</option>
+        <option value="direct">直リンク</option>
+      </select>
+      <label class="toggle"><input id="fOnlyWorking" type="checkbox" checked> 稼働中のみ</label>
+      <button id="fFav" class="btn ghost" aria-pressed="false" title="お気に入りのみ表示">★</button>
+      <button id="btnRefresh" class="btn" title="全ソース再取得（YouTube検索はクォータを消費）">⟳ 更新</button>
+      <button id="btnSettings" class="btn ghost" title="設定">⚙ 設定</button>
+    </div>
+  </header>
+
+  <div id="statusbar" class="statusbar">起動中…</div>
+  <div id="keywarn" class="keywarn" hidden>⚠ 公開環境で動作中：ブラウザにAPIキーが露出します。Google Cloud / Windy のコンソールでキーに<strong>ドメイン/リファラ制限</strong>を設定してください。</div>
+
+  <main class="layout">
+    <section id="map" class="mappane" aria-label="地図"></section>
+    <section class="gridpane">
+      <div id="grid" class="grid"></div>
+    </section>
+  </main>
+
+  <!-- 再生モーダル -->
+  <div id="modal" class="overlay">
+    <div class="dialog">
+      <header class="dlghead">
+        <h2 id="modalTitle"></h2>
+        <button id="modalClose" class="x" aria-label="閉じる">✕</button>
+      </header>
+      <div id="modalBody" class="dlgbody"></div>
+    </div>
+  </div>
+
+  <!-- 設定モーダル -->
+  <div id="settings" class="overlay">
+    <div class="dialog narrow">
+      <header class="dlghead">
+        <h2>設定</h2>
+        <button id="settingsClose" class="x" aria-label="閉じる">✕</button>
+      </header>
+      <div class="dlgbody settingsbody">
+        <p class="hint">キーはこのブラウザ（localStorage）にのみ保存され、外部送信されません。</p>
+
+        <fieldset>
+          <legend>YouTube Live</legend>
+          <label>APIキー
+            <input id="setYt" type="password" placeholder="AIza..." autocomplete="off">
+          </label>
+          <p class="hint"><a href="https://console.cloud.google.com/apis/library/youtube.googleapis.com" target="_blank" rel="noopener">Google Cloud Console</a> で「YouTube Data API v3」を有効化→APIキーを作成（無料枠あり）。ブラウザ用にHTTPリファラ制限の設定を推奨。</p>
+          <label>プレイリストID（カンマ区切り）
+            <input id="setYtPlaylists" type="text" placeholder="PLxxxx, PLyyyy">
+          </label>
+          <label class="inline"><input id="setYtSearch" type="checkbox"> キーワード検索でもライブを探す（クォータ消費大）</label>
+        </fieldset>
+
+        <fieldset>
+          <legend>Windy Webcams</legend>
+          <label>APIキー
+            <input id="setWindy" type="password" placeholder="windy key" autocomplete="off">
+          </label>
+          <p class="hint"><a href="https://api.windy.com/keys" target="_blank" rel="noopener">api.windy.com/keys</a> で無料キーを取得。ブラウザ直fetchはCORSで弾かれる場合があり、その時は <code>tools/fetch-windy.mjs</code> で生成した <code>data/windy.json</code> を使います。</p>
+          <label class="inline"><input id="setWindyClient" type="checkbox" checked> まずブラウザから直接取得を試す</label>
+          <label class="inline"><input id="setWindyLiveOnly" type="checkbox" checked> ライブ配信のあるカメラのみ表示（オフで静止画/タイムラプス型も）</label>
+        </fieldset>
+
+        <fieldset>
+          <legend>表示するソース</legend>
+          <label class="inline"><input id="setSrcYt" type="checkbox" checked> YouTube Live</label>
+          <label class="inline"><input id="setSrcWindy" type="checkbox" checked> Windy</label>
+          <label class="inline"><input id="setSrcDirect" type="checkbox" checked> 直リンク / 自治体（data/cameras.json）</label>
+        </fieldset>
+
+        <button id="settingsSave" class="btn primary wide">保存して再取得</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+          integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+  <!-- ローカル専用のキー設定（任意・gitignore済み）。編集が即反映されるようキャッシュ回避で読み込む。無ければ404が出るだけで動作に影響なし -->
+  <script>document.write('<script src="./config.local.js?cb=' + Date.now() + '"><\/script>');</script>
+  <script type="module" src="./app.js?v=3"></script>
+  <!-- PWA: Service Worker（ネットワーク優先・オフライン時のみキャッシュ） -->
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js").catch(() => {}));
+    }
+  </script>
+</body>
+</html>

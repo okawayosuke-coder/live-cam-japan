@@ -1,0 +1,5 @@
+# ローカル専用のAPIキー設定（平文で鍵を含むためコミット禁止）
+config.local.js
+
+# OS
+.DS_Store

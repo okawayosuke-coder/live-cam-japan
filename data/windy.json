@@ -1,0 +1,5 @@
+{
+  "_readme": "tools/fetch-windy.mjs が全国のWindy Webcamを取得して上書きするファイル。初期状態は空。",
+  "generatedAt": null,
+  "webcams": []
+}

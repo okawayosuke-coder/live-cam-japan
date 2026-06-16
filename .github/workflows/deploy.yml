@@ -1,0 +1,46 @@
+name: Build catalog & Deploy to Pages
+
+on:
+  schedule:
+    - cron: "0 */3 * * *"   # 3時間ごとにカメラ一覧を更新（無料クォータ内）
+  push:
+    branches: [main]
+  workflow_dispatch:        # 手動実行も可
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build-deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Build catalog (keys are CI secrets only — never sent to clients)
+        env:
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+          WINDY_API_KEY: ${{ secrets.WINDY_API_KEY }}
+        run: node tools/build-catalog.mjs
+
+      - uses: actions/configure-pages@v5
+
+      - name: Upload site (static files + generated data/catalog.json)
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: "."
+
+      - id: deploy
+        uses: actions/deploy-pages@v4
