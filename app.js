@@ -1,8 +1,8 @@
 // ============================================================================
 // app.js  ―  統合・描画・地図・ライブ判定
 // ============================================================================
-import { REGIONS, CATEGORIES, loadSettings, saveSettings } from "./config.js?v=4";
-import { fetchYouTube, fetchWindy, fetchDirect, probeImage } from "./sources.js?v=4";
+import { REGIONS, CATEGORIES, loadSettings, saveSettings } from "./config.js?v=5";
+import { fetchYouTube, fetchWindy, fetchDirect, probeImage } from "./sources.js?v=5";
 
 const $ = (sel) => document.querySelector(sel);
 const $$ = (sel) => Array.from(document.querySelectorAll(sel));
@@ -273,12 +273,13 @@ function renderCards(cams) {
   grid.innerHTML = html;
 }
 
-// 推定位置（同一地名で座標が重複しがち）はIDから決定的に小さくずらして重なりを防ぐ
+// 推定位置（同一地名で座標が重複しがち）はIDから決定的に小さくずらして重なりを防ぐ。
+// 沿岸・島の港カメラが海に流出しないよう、ズラし量は控えめ（約90〜440m）に。
 function approxJitter(id = "") {
   let h = 0;
   for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) | 0;
   const ang = (Math.abs(h) % 360) * Math.PI / 180;
-  const rad = 0.01 + (Math.abs(h >> 8) % 1000) / 1000 * 0.045; // 約1〜5km
+  const rad = 0.0008 + (Math.abs(h >> 8) % 1000) / 1000 * 0.0032; // 約90〜440m
   return [Math.sin(ang) * rad, Math.cos(ang) * rad];
 }
 
