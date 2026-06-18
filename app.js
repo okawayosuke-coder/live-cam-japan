@@ -1,8 +1,8 @@
 // ============================================================================
 // app.js  ―  統合・描画・地図・ライブ判定
 // ============================================================================
-import { REGIONS, CATEGORIES, loadSettings, saveSettings } from "./config.js?v=3";
-import { fetchYouTube, fetchWindy, fetchDirect, probeImage } from "./sources.js?v=3";
+import { REGIONS, CATEGORIES, loadSettings, saveSettings } from "./config.js?v=4";
+import { fetchYouTube, fetchWindy, fetchDirect, probeImage } from "./sources.js?v=4";
 
 const $ = (sel) => document.querySelector(sel);
 const $$ = (sel) => Array.from(document.querySelectorAll(sel));
@@ -273,12 +273,23 @@ function renderCards(cams) {
   grid.innerHTML = html;
 }
 
+// 推定位置（同一地名で座標が重複しがち）はIDから決定的に小さくずらして重なりを防ぐ
+function approxJitter(id = "") {
+  let h = 0;
+  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) | 0;
+  const ang = (Math.abs(h) % 360) * Math.PI / 180;
+  const rad = 0.01 + (Math.abs(h >> 8) % 1000) / 1000 * 0.045; // 約1〜5km
+  return [Math.sin(ang) * rad, Math.cos(ang) * rad];
+}
+
 function renderMarkers(cams) {
   state.layer.clearLayers();
   state.markers.clear();
   for (const cam of cams) {
     if (cam.lat == null || cam.lng == null) continue;
-    const m = L.marker([cam.lat, cam.lng], { icon: markerIcon(cam.status, cam.approxLocation), title: cam.title + (cam.approxLocation ? "（推定位置）" : "") });
+    let lat = cam.lat, lng = cam.lng;
+    if (cam.approxLocation) { const [dy, dx] = approxJitter(cam.id); lat += dy; lng += dx; }
+    const m = L.marker([lat, lng], { icon: markerIcon(cam.status, cam.approxLocation), title: cam.title + (cam.approxLocation ? "（推定位置）" : "") });
     m.on("click", () => openModal(cam.id));
     m.addTo(state.layer);
     state.markers.set(cam.id, m);
