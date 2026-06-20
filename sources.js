@@ -65,6 +65,7 @@ const GAZETTEER = [
   ["成田空港", 35.765, 140.386], ["羽田空港", 35.549, 139.780], ["羽田", 35.549, 139.780],
   ["中部空港", 34.858, 136.805], ["セントレア", 34.858, 136.805], ["関西空港", 34.434, 135.244], ["関空", 34.434, 135.244],
   ["新千歳空港", 42.775, 141.692], ["福岡空港", 33.585, 130.451], ["那覇空港", 26.196, 127.646], ["伊丹空港", 34.785, 135.438],
+  ["宇部空港", 33.930, 131.279], ["福島空港", 37.227, 140.431],
   // 伊豆・小笠原諸島（最優先。チャンネル名に「伊豆」が含まれ本土"伊豆"に誤マッチするのを防ぐ）
   ["元町港", 34.750, 139.360], ["岡田港", 34.794, 139.391], ["波浮港", 34.692, 139.428],
   ["伊豆大島", 34.75, 139.39], ["三原山", 34.724, 139.394],
@@ -220,7 +221,8 @@ async function ytVideosLive(ids, key) {
       if (!live) continue; // “動作している(=今ライブ中)”のみ
       const sn = v.snippet;
       const title = sn.title || "(無題)";
-      const text = `${title} ${sn.channelTitle || ""} ${sn.description || ""}`;
+      // 地名推定は title＋channelTitle のみ（descriptionは他カメラ一覧を列挙しがちで誤マッチの元）
+      const text = `${title} ${sn.channelTitle || ""}`;
       const viewers = v?.liveStreamingDetails?.concurrentViewers;
       const thumb =
         sn.thumbnails?.medium?.url || sn.thumbnails?.high?.url || sn.thumbnails?.default?.url || null;

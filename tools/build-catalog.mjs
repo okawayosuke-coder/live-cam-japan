@@ -64,6 +64,7 @@ const GAZETTEER = [
   ["成田空港",35.765,140.386],["羽田空港",35.549,139.780],["羽田",35.549,139.780],
   ["中部空港",34.858,136.805],["セントレア",34.858,136.805],["関西空港",34.434,135.244],["関空",34.434,135.244],
   ["新千歳空港",42.775,141.692],["福岡空港",33.585,130.451],["那覇空港",26.196,127.646],["伊丹空港",34.785,135.438],
+  ["宇部空港",33.930,131.279],["福島空港",37.227,140.431],
   ["元町港",34.750,139.360],["岡田港",34.794,139.391],["波浮港",34.692,139.428],
   ["伊豆大島",34.75,139.39],["三原山",34.724,139.394],
   ["利島",34.526,139.282],["新島",34.370,139.270],["式根島",34.323,139.214],
@@ -127,7 +128,9 @@ async function ytVideosLive(ids) {
   for (let i=0;i<ids.length;i+=50){ const d=await ytJson("videos",{part:"snippet,status,liveStreamingDetails",id:ids.slice(i,i+50).join(",")});
     for (const v of d.items||[]) {
       if (v?.snippet?.liveBroadcastContent!=="live") continue;
-      const sn=v.snippet, title=sn.title||"(無題)", text=`${title} ${sn.channelTitle||""} ${sn.description||""}`;
+      const sn=v.snippet, title=sn.title||"(無題)";
+      // 地名推定は title＋channelTitle のみ（descriptionは他カメラ一覧を列挙しがちで誤マッチの元）
+      const text=`${title} ${sn.channelTitle||""}`;
       const guessed=guessRegion(text), geo=geocodeTitle(text,guessed);
       const viewers=v?.liveStreamingDetails?.concurrentViewers;
       cams.push({
