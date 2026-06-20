@@ -5,10 +5,10 @@
 //       → コード更新が即反映され「古いキャッシュで動く」問題を起こさない。
 // 対象: 同一オリジンのGETのみ。YouTube/Windy/地図タイル等の外部は素通し。
 // ============================================================================
-const CACHE = "lcj-shell-v5";
+const CACHE = "lcj-shell-v6";
 const SHELL = [
   "./", "./index.html", "./styles.css",
-  "./app.js?v=5", "./config.js?v=5", "./sources.js?v=5",
+  "./app.js?v=6", "./config.js?v=6", "./sources.js?v=6",
   "./manifest.webmanifest", "./icon.svg",
 ];
 
@@ -29,7 +29,12 @@ self.addEventListener("activate", (e) => {
 self.addEventListener("fetch", (e) => {
   const url = new URL(e.request.url);
   if (e.request.method !== "GET" || url.origin !== location.origin) return; // 外部・非GETは素通し
-  // ネットワーク優先（最新を取得）、失敗時のみキャッシュにフォールバック
+  // data/（catalog.json等）はキャッシュしない＝古いカタログを二度と配らない（常にネットワーク）
+  if (url.pathname.includes("/data/")) {
+    e.respondWith(fetch(e.request).catch(() => caches.match(e.request)));
+    return;
+  }
+  // アプリ本体はネットワーク優先＋キャッシュ（失敗時のみキャッシュにフォールバック）
   e.respondWith(
     fetch(e.request)
       .then((res) => {

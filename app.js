@@ -1,8 +1,8 @@
 // ============================================================================
 // app.js  ―  統合・描画・地図・ライブ判定
 // ============================================================================
-import { REGIONS, CATEGORIES, loadSettings, saveSettings } from "./config.js?v=5";
-import { fetchYouTube, fetchWindy, fetchDirect, probeImage } from "./sources.js?v=5";
+import { REGIONS, CATEGORIES, loadSettings, saveSettings } from "./config.js?v=6";
+import { fetchYouTube, fetchWindy, fetchDirect, probeImage } from "./sources.js?v=6";
 
 const $ = (sel) => document.querySelector(sel);
 const $$ = (sel) => Array.from(document.querySelectorAll(sel));
@@ -83,7 +83,8 @@ function reviveDates(c) { if (c && c.lastChecked) c.lastChecked = new Date(c.las
 
 // 公開モード: ビルド時生成の静的カタログ（YouTube+Windy）を読む
 async function loadCatalog() {
-  const res = await fetch("./data/catalog.json", { cache: "no-store" });
+  // キャッシュバスト（?cb=時刻）で全キャッシュ層を貫通し、常に最新カタログを取得
+  const res = await fetch("./data/catalog.json?cb=" + Date.now(), { cache: "no-store" });
   if (!res.ok) throw new Error("no catalog");
   const data = await res.json();
   state.catalogGeneratedAt = data.generatedAt || null;
