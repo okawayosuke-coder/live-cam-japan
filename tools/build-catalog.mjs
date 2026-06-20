@@ -27,6 +27,8 @@ const WINDY_KEY = process.env.WINDY_API_KEY || "";
 const PLAYLISTS = [
   "PLM7jIABwhUkb41KUDAke1x8I0FmTL5Z4s", // 日本全国のライブカメラ
   "UUqdejTsUrCvZ55Y8u9v5h9w",           // 東京都 伊豆・小笠原諸島 港湾ライブカメラ
+  "UUEDn0tLxpVqEvI3NJyE2DRA",           // 波のスケッチ（鴨川/外房サーフ）
+  "UUY88ELMjnfMyOYMUw5K9o3g",           // 犬吠埼テラス（銚子・24時間）
 ];
 // 検索は100ユニット/回と高価なので少数に絞る（広く拾いたい代表クエリ）
 const SEARCH_QUERIES = [

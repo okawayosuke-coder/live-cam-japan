@@ -41,7 +41,13 @@ const DEFAULTS = {
   // ・PLM7...: 「日本全国のライブカメラ」キュレーション
   // ・UUqdej...: 東京都港湾局 公式「伊豆・小笠原諸島港湾ライブカメラ」のアップロード
   //   （元町港/岡田港/波浮港=大島ほか 全11島17港。UUはチャンネルの全アップロード再生リスト）
-  youtubePlaylists: ["PLM7jIABwhUkb41KUDAke1x8I0FmTL5Z4s", "UUqdejTsUrCvZ55Y8u9v5h9w"],
+  // ・UUEDn… 波のスケッチ（鴨川/外房サーフ）, UUY88… 犬吠埼テラス（銚子・24h）= 外房チャンネル
+  youtubePlaylists: [
+    "PLM7jIABwhUkb41KUDAke1x8I0FmTL5Z4s",
+    "UUqdejTsUrCvZ55Y8u9v5h9w",
+    "UUEDn0tLxpVqEvI3NJyE2DRA",
+    "UUY88ELMjnfMyOYMUw5K9o3g",
+  ],
   // 追加のキーワード検索（クォータ消費が大きい[100/回]ので既定OFF）。
   // ONにすると現在ライブ中のカメラを広く探索して件数が増える。重複は自動排除。
   youtubeSearchEnabled: false,
