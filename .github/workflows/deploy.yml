@@ -2,7 +2,7 @@ name: Build catalog & Deploy to Pages
 
 on:
   schedule:
-    - cron: "0 */6 * * *"   # 6時間ごとに更新（13クエリ×4回/日≈5300ユニット/日・無料枠1万内）
+    - cron: "0 */6 * * *"   # 6時間ごとに更新（115再生リスト＋8検索≈1100ユニット/回×4回/日≈4600/日・無料枠1万内）
   push:
     branches: [main]
   workflow_dispatch:        # 手動実行も可
