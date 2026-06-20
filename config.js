@@ -45,8 +45,12 @@ const DEFAULTS = {
   youtubePlaylists: [
     "PLM7jIABwhUkb41KUDAke1x8I0FmTL5Z4s",
     "UUqdejTsUrCvZ55Y8u9v5h9w",
-    "UUEDn0tLxpVqEvI3NJyE2DRA",
-    "UUY88ELMjnfMyOYMUw5K9o3g",
+    "UUEDn0tLxpVqEvI3NJyE2DRA",   // 波のスケッチ（鴨川/外房）
+    "UUY88ELMjnfMyOYMUw5K9o3g",   // 犬吠埼テラス（銚子）
+    "UUorpI8lCIFIuNEZsYAn0Qcg",   // 一宮・釣ヶ崎（外房サーフ）
+    "UUKP-Q8DRYQ7Pl6jRirZasBA",   // 太東/東浪見（外房サーフ）
+    "UUWAo3gf7X9JvcKifG0s2vpQ",   // 勝浦・部原（外房サーフ）
+    "UUV3arNLjYmBubfETmAAzS4w",   // なみある?（サーフ各地）
   ],
   // 追加のキーワード検索（クォータ消費が大きい[100/回]ので既定OFF）。
   // ONにすると現在ライブ中のカメラを広く探索して件数が増える。重複は自動排除。

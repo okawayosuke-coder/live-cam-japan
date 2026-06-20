@@ -29,6 +29,10 @@ const PLAYLISTS = [
   "UUqdejTsUrCvZ55Y8u9v5h9w",           // 東京都 伊豆・小笠原諸島 港湾ライブカメラ
   "UUEDn0tLxpVqEvI3NJyE2DRA",           // 波のスケッチ（鴨川/外房サーフ）
   "UUY88ELMjnfMyOYMUw5K9o3g",           // 犬吠埼テラス（銚子・24時間）
+  "UUorpI8lCIFIuNEZsYAn0Qcg",           // 一宮・釣ヶ崎（外房サーフ）
+  "UUKP-Q8DRYQ7Pl6jRirZasBA",           // 太東/東浪見（外房サーフ）
+  "UUWAo3gf7X9JvcKifG0s2vpQ",           // 勝浦・部原（外房サーフ）
+  "UUV3arNLjYmBubfETmAAzS4w",           // なみある?（サーフ各地）
 ];
 // 検索は100ユニット/回と高価なので少数に絞る（広く拾いたい代表クエリ）
 const SEARCH_QUERIES = [
