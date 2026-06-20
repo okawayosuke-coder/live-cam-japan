@@ -251,11 +251,18 @@ export function saveSettings(patch) {
   return loadSettings();
 }
 
-// lat/lng がどの地方に属するか（最初に含んだ地方）
+// lat/lng がどの地方に属するか。
+// bboxは瀬戸内海(中国⇔四国)等で重複するため「先勝ち」だと松山/高松/八幡浜などの四国側が
+// 中国に誤ラベルされる。内包する全bboxのうち「地方中心が最も近い」ものを採用して正す。
 export function regionOf(lat, lng) {
   if (lat == null || lng == null) return null;
+  let best = null, bestD = Infinity;
   for (const r of REGIONS) {
-    if (lat >= r.s && lat <= r.n && lng >= r.w && lng <= r.e) return r.id;
+    if (lat >= r.s && lat <= r.n && lng >= r.w && lng <= r.e) {
+      const [cy, cx] = r.center;
+      const d = (lat - cy) ** 2 + (lng - cx) ** 2;
+      if (d < bestD) { bestD = d; best = r.id; }
+    }
   }
-  return null;
+  return best;
 }
