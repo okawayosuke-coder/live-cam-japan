@@ -38,7 +38,7 @@ export const CATEGORIES = [
 // 混ざっても表示には出ない。tools/build-catalog.mjs もこの配列をそのまま使う（単一ソース）。
 //   先頭8件 = 既存（全国キュレーション/伊豆小笠原港湾/外房サーフ）。
 //   以降 = 全国発掘（北海道→沖縄＋河川防災/空港港湾/観光温泉/動物園水族館/サーフ）。
-//   計168件（2026-08に実在＆現在ライブ検証済みの53chを追加）。
+//   計472件（2026-08に実在＆現在ライブ検証済みを2段階で追加＝第1弾53ch＋第2弾304ch）。
 export const DEFAULT_PLAYLISTS = [
   // --- 既存 ---
   "PLM7jIABwhUkb41KUDAke1x8I0FmTL5Z4s", // 日本全国のライブカメラ（キュレーション）
@@ -221,6 +221,311 @@ export const DEFAULT_PLAYLISTS = [
   "UUpOBAWYh0T5Zz5S7uKIiEmQ", // 長崎ケーブルメディア[公式]
   "UUMj5mfLSlOmx-rOpquoErDQ", // 岡垣町観光協会のまいにち
   "UUVg0E1H6LZBhTt_2oSm2Hzg", // バクノビジョン
+  // --- 全国発掘 第2弾（2026-08・実在＆現在ライブ検証済み） ---
+  "UUVh1-I9rKs7w7C7_LuUhwcg", // MARUNUMA
+  "UUwzJctz6m-0wG_evkheecZA", // フジヤマNAVI
+  "UUZ9t1d3zxJGIw6GMmbGdjuw", // 和歌山県 東牟婁振興局串本建設部管内 河川映像
+  "UUaaSp7JYkACHR-Sr-p3OHeQ", // Tokyo Views
+  "UUwNfkYp9gKIvQDN1kPhpCsQ", // F.S.T. NET
+  "UUMaXtOvzgcCQt7MZwJmr7XA", // EN DAIBA
+  "UUZ974tQkAeV7_l_opPHCcdg", // The Dramatic 中央本線。
+  "UU9pARxM8ajMNB0rA8xBamLg", // 湯島猫島ありのまま
+  "UURZMs9s1P6o0b1nGibmtkJA", // 共同通信LiveCamera
+  "UUZTGqy2rQTGap-b6IyqECVw", // City Kamiamakusa
+  "UUCvr6WB3iOFt623D90pZCtA", // KTV12net /小林TV
+  "UU1xeTccsAQdz7-fF0eAa5HA", // 蔵王索道協会
+  "UUuv7xqb-jo3HEFMIVLTY_CA", // テイケイ公式チャンネル
+  "UUkAB51Lbgor6SW8aE4S3zuQ", // 東京ライブカメラ
+  "UU7goiCiuQAGcDCjsajq50wQ", // 札幌もいわ山ロープウェイ【公式-2】
+  "UUFzR5mfAXL5fo5A8K8OuHpQ", // 八幡浜 市役所
+  "UUfM6ln-djv3yp4PlyP7OSTA", // 杖突峠峠の茶屋
+  "UUpBSj4JvnkOP1TJ-eIxaFKw", // 39K
+  "UU7OgMFzPdF2t-tawdgrsH_A", // 自然公園財団 上高地支部
+  "UUyhNmQHG5ykhoAKIPDjZJ_A", // 南伊豆町観光協会【伊豆の終点、感動の出発点。】
+  "UU7lHIZbQzHILorlX4R0izsw", // starstyle
+  "UU5-6c7v9yFTZ4yOl_E8LBxQ", // 【公式】熊本市動植物園 ライブカメラチャンネル
+  "UU2lZiGfy3K5yZEtfore5mVw", // GORO SKY TOWER GOROGATAKE PA
+  "UUEdkwjq31H4y3xfPST9ZFtg", // 箱根ターンパイク株式会社 Official YouTub
+  "UUynXCHprmOfyGzGSnqgp6Wg", // 株式会社 上野城公式
+  "UUh-ZgieTtDdkrM1r_FIkX1Q", // 蓼科湖畔 蓼の花ライブカメラ
+  "UU85IeiB1bl_FgFDsqjo6S1A", // NaganoRowing
+  "UUP31tAaN6scBcVAmgf2i1yg", // 恐羅漢スノーパーク&恐羅漢エコロジーキャンプ場
+  "UUudZb3TjSjDk3NDCKnuipeQ", // ライブカメラ見ませんか 【 Shingenn しんげん
+  "UUrQm4VsC4STPkwuq0kP8TKw", // 和歌山県 有田振興局管内 河川映像
+  "UUKF9JhWeRNlgtwmLJpD1_vA", // 東京ドームシティ
+  "UUCp1rWY4KFh0t3fKILlPiUQ", // ToyoComtecLiveChannel
+  "UU56apcbc2pLZ9xyBizbD1Dg", // インフォ新宿 channel
+  "UUCpZAU0b2vZv598fDBlTlqw", // BANKSY GINOWAN
+  "UUwr6GbnODegSEq-WGYIJs6g", // ODAIBA TOKYO LIVE
+  "UUpk2ftN35L3xfoV2S5xLN2A", // 【LIVE】新宿 大ガード交差点 Tokyo Shinj
+  "UUynX4LJTQ_H7_KPy7QiIS2A", // HAKODATE LIVE CAMERA
+  "UUnpVhaYEaUYwiQaFdqoPK0g", // Japan Live Camera
+  "UUaXRryxoYWX-66VtGPDOmdA", // Scenery & Sound Live Channel
+  "UU3bhyaNq5-NFF3A4HJssvIQ", // 日本平夢テラスofficial
+  "UUur21TajiRsI1Da1GLzv7Lg", // ITM SKY CAM
+  "UU5lG_82zJKl2gvDKkHL0m5Q", // 飛騨小坂観光協会 Hida-Osaka Tourist
+  "UUho5sR8l5OCLFgQa22bSbrQ", // 株式会社忍野CATV
+  "UUlevANLrH6pEQFfqxBSsCzQ", // （一社）黒部・宇奈月温泉観光局
+  "UUi7Mc9-mVGBKIYXXBtm3iGQ", // お宿欣喜湯＆別邸忍冬（川湯温泉）
+  "UUsbLhJtyjuslvSMkWZkd36Q", // (一社)日の出町観光協会
+  "UUbLm5pG7JURHymVMcISf6_g", // 草津町公式YouTubeチャンネル2
+  "UUTY5Gt9CxQcKVdHX6RFgojQ", // 会津東山温泉向瀧・mukaitaki
+  "UU811znPqrm4Oqs4P-rGN9yg", // 【公式】リビエラ / Riviera Official
+  "UUD6D3tinVTdsbikEtSCeYcw", // 古林伸美
+  "UUFM4GflSxh1UEJK1MJbnsEg", // 南知多町観光協会
+  "UU01gv8sm8A29MSKeCEUaq1A", // 株式会社石橋
+  "UUveiFh0l5eGEVwv4KgMhBfA", // 厚岸町床潭（トコタン）漁港カメラ
+  "UUQnSuJ_aYt4XRlvBnL4ak4Q", // 一般社団法人ふじさん駿河湾フェリー
+  "UUCb5bQs4a9U4h4Q8rF4YBgQ", // 北海道利尻郡利尻町仙法志字政泊漁港ライブカメラ
+  "UUZXscHtExsJQe2z-vfoN1ZA", // 神奈川県小田原市早川漁港ライブカメラ
+  "UUcx2yTKNrSvKGwvPpOzOVWA", // 利尻島_旅番屋
+  "UUPPyaDqgxNlbiyOkq2FzMOQ", // IAT岩手朝日テレビ
+  "UURZplV8vE67bgCI6_3sm3mQ", // たぬきやLIVE
+  "UUPgtd-b8SPHD0QZ4Xa29Y3A", // 千葉県佐倉市上志津原ライブカメラ
+  "UUwWWMxoGXIVX_LZUn11bneQ", // 長野県軽井沢町
+  "UU4BBFj8uCYaNPGVNJGtJDlQ", // 千葉県成田市土屋ライブカメラ
+  "UU85_gAlEhxwRWd6A6klLm9w", // 大阪府東大阪市高井田元町ライブカメラ
+  "UU0APqyCiILQwcpUPBEPPx1w", // HKだんじり(東岸和田)
+  "UU7p1-DM94FYbHlq66IZYKPQ", // Gorimon 2「変わりゆく街並みをスキャン！」
+  "UUZdZ7uXbEZ1E96SnvfJGOAg", // 【ほっかいどう】ぷーちゃんねるResort
+  "UUFod_8qjE6MO5Jq9IWIAf7Q", // 山梨県上野原市上野原ICライブカメラ
+  "UUDwiOni85GLB8NEYIPUu5iw", // 栃木県宇都宮市江野町ライブカメラ
+  "UUjeJcwvOUi4XZpM4J9bm74A", // 防犯カメラ販売・設置工事の防犯110番
+  "UUW8SDGfX60OFSA7LyVZ9eNg", // AmpiTa
+  "UUDQUxTLSRp48XxHfMe5S4Jg", // 鳥取県八頭郡八頭町井古ライブカメラ
+  "UUXectqgwIeJpnb6Ao64tstg", // 愛媛県松山市別府町ライブカメラ
+  "UUHoJiBhfhNVyFcennfJr7Yg", // トリニティーライブ
+  "UU_S3wdk3RsrBhP7nI_o21sw", // 香川県三豊市詫間町瀬戸内海ライブカメラ
+  "UUDLDUOVN77uM8TakoGeQdYw", // 北海道苫小牧市表町交通状況ライブカメラ
+  "UUnuWX4kaxEHHcpqy-Z_YwaQ", // 北海道千歳市千代田町千歳駅前ライブカメラ
+  "UUdpvGwSESOrvjPxwiwKX6Xg", // 熊本県熊本市南区近見ライブカメラ
+  "UUkPKVrTdGj4pFcCuNARBIWg", // 北海道旭川市神居町共栄ライブカメラ
+  "UU3fDjbb2JVIX6rOLNNqctow", // 【公式】五月山動物園 ウォンバットてれび
+  "UU5nv3SjY473p89kwbn-9CVg", // 動物支援コノドch
+  "UUtrzqc4p9H6EsmK8sqpho6A", // 紋別アザラシシーパラダイス
+  "UUfLSbr8eONUgh3GmCv4QJPQ", // cvn ペンギンライブカメラ
+  "UU2ghkdmPNsVLCWNZNM9Tutw", // 久留米市鳥類センター
+  "UUNI0op3CT3IXCnOAhr9r3Mg", // cvn サル山ライブカメラ
+  "UUBT-WLQk0tN_WfjkrqdSVzQ", // Forest Notes 森の動画チャンネル
+  "UUAzaZfwgfjYVRGn4S60xM6Q", // TSCテレビせとうち
+  "UUtGDkpAywmLD6wzYGU5hv5A", // 日本平動物園
+  "UURs28y8_qHheJ_yPjZ37e-g", // KOMORO ZOO 小諸市動物園　長野県小諸市
+  "UUee-u456_iVEFcl-aTCTxcA", // グーライブ(Goolight)
+  "UUuboS8tkqptYstvCrAtIZ6g", // 株式会社技研工房
+  "UUmhQQ2a_ovsvHX5Sh3aW-fQ", // 寒風山回転展望台
+  "UU_9dgNP8GvfhUURELouR3Dg", // 湘南ライブカメラ
+  "UURqRQQPgS3eu6DQVDni5Mrw", // 身延七面山ライブカメラ
+  "UUYVJUt1uJZJJ_UBEnb2LXHg", // 古墳のある青峰園
+  "UU4vlCNw-GtuaQiA-nn8bwvg", // 富士山中湖パノラマライブカメラ
+  "UUDMTA9ODpNKG2ohw3gTf-Zw", // 館山城・山頂ライブカメラ
+  "UUUYwqlUZcN1gFNz-KQtwV1g", // 松本のシンカ【松本市公式チャンネル】 / Matsumo
+  "UUA1PeQnw4Ys2kmBXa2GIF-Q", // 城のホテル甲府
+  "UUd6GEK664CTEWRZda7Fu7Lg", // 大阪NEWS【テレビ大阪ニュース】
+  "UUPeJ7PiELF7tAjGrOVrQ94A", // 城山公園ライブカメラ
+  "UUv7_krlrre3GQi79d4guxHQ", // 読売テレビニュース
+  "UUlaKuQ4CsCqpPQpIB-ieqIg", // Discover SENDAI
+  "UUAqJUdintpCdd-Kqk-UxFTw", // agataJapan
+  "UU3ZzMI_q4BBdA4QIHaxAWaA", // 茨城県東茨城郡城里町石塚ライブカメラ
+  "UUvyqF5m-sSOf4W7Xxr0BtYw", // 松本空港
+  "UU3vSAbIwuDdbyxln1Wlnehg", // SEA & SKY ch
+  "UUVdRvQptqqoLJA9s4_QcpiQ", // Kansai HD
+  "UUhy0DnkIETJW0MWR7hIRKBA", // 日光 中禅寺温泉【湖上苑】公式チャンネル
+  "UUusBqJK8c15Hq-D8IfKHQAg", // 十和田湖マリーナ
+  "UUCk_mV0977ZBEExItWcQgng", // 鹿屋体育大学スポーツ情報センター
+  "UUVa9EaYy_W0V8z-VIcrA0GA", // 【公式】エンゼルフォレスト白河高原
+  "UU2gv7jCWYfZk-EiwP3bFFrg", // アイオーサポート
+  "UUYcexkyqYKH9oWzprRGsW0A", // ふもとっぱらチャンネル
+  "UUjvpBcOLMBqktt0KJxjtJCg", // BANTV
+  "UU2vDsbLyCHQjXatp4nT0Jfw", // ZEN RESORT NIKKO
+  "UU95danhP-6ym8z3ST4ZRR_Q", // 下諏訪観光【公式】
+  "UUKABaVLyYlI02C6C8FHGRQQ", // 羽鳥湖天気カメラ(標高940m)
+  "UUxuCMqKKTWjzNbZiw661kAQ", // 藤吉電子設計
+  "UUx7aVfqIUgc4jwsvXl_tT-g", // M.M.R 鉄道倉庫
+  "UUwYeh4cu-0z0hFd3wwYgzeA", // 日光二荒山神社 ライブカメラ
+  "UUnO4Bd0YTXkth8dpxVOq1xQ", // タングラム斑尾東急リゾート【公式】_Tangram Ma
+  "UUz9uOOV45iv-gi8t5fpdkDQ", // VICENTE AGEMATSU
+  "UUdI2ChbySxWNGSWEOaeTjFg", // ぐるっと福島TV
+  "UUXJewYtDfap7D1g-CuYh8CQ", // 長野県岡谷市諏訪湖ライブカメラ
+  "UUrgX2wz-e6y2no7Vhqqn29A", // ニセコアンヌプリ国際スキー場
+  "UUnXXZnHcM2Y-WX7U_fNR2Qg", // SAJ軽井沢スキー学校
+  "UU9rA3oJa94_m45Km0OJpO5w", // 志賀高原熊の湯official
+  "UU3zsqZH0S4lIJ5p6HDhjKoQ", // shinyoko snova
+  "UUh1csHupXAcvi1erIFJr6QA", // 鹿島槍スキー場 Kashimayari Ski Park
+  "UU3FO42o5-Tvl_vP_AZSy2kA", // cvn 治部坂高原スキー場ライブカメラ
+  "UU1ddmDCIlasqGm1PItp6AoA", // 上婦負ケーブルテレビ
+  "UUIC0IsJemlo5nOVzC_frbMA", // 野沢温泉スキー場 日影スキーセンター NOZAWAONS
+  "UU8AHDeJk9r2ko0f2LWp8h1A", // 絶景・猪苗代スキー場
+  "UUG7OHvaUVRsBhUWrjzByO1Q", // 猿倉スキー場
+  "UUk4bgav5X0rlbGefFnPcuoQ", // チューリップテレビ
+  "UUJ9nkytiPcIBv2nPW9tQyWA", // 川場スキー場
+  "UUCe-Blxf6Fr9ZBfyEwXFM3A", // 高峰マウンテンリゾート
+  "UUIJILlnhQs_OpQeT2VK910A", // 八幡平リゾートlive用
+  "UUfg8n0p5zxu4V9l2lnHgyyQ", // 民宿吉野屋
+  "UUNQH-lj9U7xZ784LWipLiSg", // 菅平プリンスホテル
+  "UUK-174OXa-6JQCniHJvfdwA", // 下倉スキー場ライブカメラ
+  "UU-S4QbkUwfm5oF0BzNS0oug", // ほぼ日のライブカメラ
+  "UUhwpNG3i-WKvf2ukfU1eWmQ", // 山形県米沢市万世町刈安米沢スキー場ライブカメラ
+  "UUzm0_Yoo7McbYosgzlHo5KA", // ホテルこのはなパーキング
+  "UUcFHRjoyLgjuKU6amaVh-Jg", // 北八ヶ岳リゾート
+  "UUZ2S0Tnt9IxP3oyr3c8vqCQ", // 公益財団法人　天神崎の自然を大切にする会
+  "UUpgmC8gaNgrYS1-j2kpgaGQ", // sounds good
+  "UUzdRRUjfJh1ff3g_IGzujEA", // 日高町ライブカメラ
+  "UUJmcX1-3OyZr7rGWSFc-1rg", // The East Coast Of The Izu Pe
+  "UUKqYWckqq6044l6zUxISqkw", // LIVE SHIMODA
+  "UUSzlMnbA7Fl0qSIggqllwFg", // WITH SEA
+  "UUaHr0a1x8zmQ1dxanCeuesA", // 朝日新聞LIVE
+  "UUcNpMZYWUnTNePHU0IO38pQ", // Love, Mitoyo
+  "UU4FyIzIkofhBsjgLkUmYxJw", // 和歌山県 西牟婁振興局管内 河川映像
+  "UUNkxFS9BAHACmmuo0h4IgOg", // AMAUOTURI
+  "UUVvmg_yobAVydMzxUhgelJA", // あきのこと - Akinocoto - Dear all
+  "UUmUX6oxTrUegbudWIWtvrYg", // 松原市上下水道管理課
+  "UUtpZE6LTRW8gGzD2GCaOcXg", // 土佐の海空と侍猫🐻🐈
+  "UUkERHEaKiEZjOAxN1Dr9Cgg", // muturyou
+  "UUqpfQ9u1gWxzRhBznFg6TNw", // 和歌山県 東牟婁振興局新宮建設部管内 河川映像
+  "UU1kDVgEX2DsE295Bkum_K9Q", // 【LIVE】東京 新宿 鉄道 ライブ Tokyo Shinjuku Live Ch
+  "UU9yuSASu1r3dKOvEmZwnptQ", // こだまらいふ Kodama life / Shinkansen Japan bullet train
+  "UULizOnUQUuR0FW58PP-ZACA", // 日テレ鉄道部
+  "UUE5uxiZBrhwFPwzlSfmdWQA", // Tokyo Akabane Live Camera
+  "UU2nzv_yI8NPXVLwWU_psgxQ", // 吉塚ライブカメラ
+  "UUjmqhsGQ9J1QK4r5mUrZb4A", // 鉄道沿線の生活
+  "UUkE1JbngfWjKngmTSujg_wA", // 千葉県タクシー協会京葉支部 CHIBA TAXI Association Keiyo Branch
+  "UUihKyLj79k42fSBvPGRja6Q", // 東武日光駅前ライブチャンネルNIKKO Live channel
+  "UU2q20o6JH-dlTdUWn4j0bYQ", // ZAZAマガジンチャンネル2nd
+  "UUu76uqpelv-VALL5d6zsljg", // 神田ライブチャンネル(Kanda live channel)
+  "UUdfXoTp4-fh3MRQQFzOlPkg", // 【JR東日本】新潟駅発車標ライブカメラ
+  "UUdoxbxQNSOTRDi_XZvF6cJw", // 【LIVE】定点カメラ@大阪コロナホテル
+  "UUVTfCMdif-dxt-e_ijach_Q", // 道の駅日光 日光街道ニコニコ本陣
+  "UUAPMlxH-TQVQNzKgD9V_JEw", // うめたくん
+  "UUAaw-OnuKB5FTpBkM0xUZ4Q", // 中条駅観光交流室
+  "UU8iN-WKPu820ve-4t9NxHRw", // 新潟ニュース NST　-NIIGATA NEWS NST-
+  "UUfRziws8kV_nYxfS9OXz6sQ", // cvn 飯田駅ライブカメラ
+  "UUI24HewpQ3XQorXQEjrYPJw", // 近鉄久居駅前ライブカメラ | Lofi Hisai
+  "UUhRQpufaxclkezElsQ04VXw", // オノデンch
+  "UULbDKpDAkM8O4QVvbdA9h0w", // 福井ケーブルテレビ
+  "UUDeNzPNV3K8nNkOsMFRB-sw", // 日本海テレビニュース
+  "UUHxsYayZMyj1RbaAgxU0lCQ", // 東北新幹線 アルファライブ
+  "UUVOTSwpYrlHK5ZEZrjrRY2w", // MrSolidsolution
+  "UUgZl3r4RcelbiD7unKMZnWw", // 金剛山ライブ
+  "UUPAuCLWsGBJDaS21WrGy2Jw", // よれっしゃこいっちゃ
+  "UUaydvLwWthLMbfKLEQSY2UQ", // 東京都水防チャンネル
+  "UU_2ba5MHjCGvIv0xXwL4xZQ", // 群馬県 多野郡 上野村Ueno-village
+  "UU1gDeEnSozPenmKLWxIXXyw", // ぐんまの道路ライブカメラ【東部地域】
+  "UUg9QtOKSEptfh2IxsqyZ5AA", // 相模川ライブカメラ
+  "UUXJ_ME7jWCW7CgrzKUqsD8g", // 徳島県河川整備課
+  "UUwKfdA61jpY3Smhu9XxMLHQ", // 5 淀川水系 名張川 宇陀川 服部川 柘植川
+  "UU6avbfi8llm_IDkKqBP3Jjg", // 青梅市観光協会
+  "UUcwYr4sdrvx3XjdkyHnhtBA", // 国土交通省 北陸地方整備局水災害対策センター
+  "UUIcq3oUcaQl6LJkiCpEoQ2Q", // LIVECAM TAKEHARAPORT TADANOUMIPORT JAPAN
+  "UUqw94gkzHWi7_CI1j0wmKMA", // 小笠原村ライブカメラ1
+  "UUpHT_66E7YVI33nvaVD5KPw", // The Gateway to Rabbit Island | Tadanômi Port
+  "UUsRb1ylRjChH7-tQtgRWvXA", // 利島村ライブカメラ
+  "UUYR27i2wj9PgsR9fYkpkFFw", // 東京都新橋駅新幹線ライブカメラ
+  "UUA0JLMcalIWrwEOv1mgevsw", // ストリーミングアカウント
+  "UUIMs8atP2qoxcfAvhiFlzGQ", // Hokkaido Kurashi no Yomimono
+  "UUKtFn0R-NGm6cocqdoGAQTA", // 横浜汽車道ライブカメラ /Live Cam Yokohama Japan
+  "UULsrKjUSA5LGR5iEl5AdDyg", // My Japan Tracks
+  "UUGohMl8EseTMaNo37hAssLA", // 谷川岳ロープウエー株式会社
+  "UUiIA2H7KnbK7Wsyhpw1_glw", // fuji-net
+  "UURRJZCkzKBkBG1N7duHu6Iw", // エルシーブイ株式会社
+  "UUdI9Vn0aIzNOdlIZkAy-VnA", // official MIZNO HOTEL
+  "UUaxxRyMskvvbpQMo-VJpNhw", // EN DAIBA GLOBAL
+  "UUudHmG80OydTxJzb-a1FGxA", // 夏コミ・冬コミ待機列やイベント風景を撮影定点観測する放送局
+  "UU-NuZ8QbpIIDK8ZhzsOyEpQ", // CAHAYA BULAN
+  "UUiVxzgxfn4OhuDygv5o5-mg", // Kariyushi Hotels
+  "UUN4r4N7n0nRmyfWbzXHi-Xg", // Motobu Terrace
+  "UUkUdb6wh-TE9MK7Q2VTE5-A", // 静岡市さった峠 ライブカメラ
+  "UUGW7Cx2p9UI_KffBLVNZ2mw", // ぐんまの道路ライブカメラ【西部地域2】
+  "UURDIwmg6CFDF6yRuojYbGPw", // 忍野村公式
+  "UUoXSony4Fgr3WS0aLlIBj6A", // 箱根全山ウェブカメラ乙女峠
+  "UUVuOdqtmmJod2GmhxlLfmCw", // ぐんまの道路ライブカメラ【北部地域】
+  "UURruWUK0POjg2veibHucffQ", // 大阪環状線ライブカメラ
+  "UUgJR4NiTcsb4h95YrsheNYw", // KawazuLiveCam
+  "UUPSoamgFxuDznR5ZfU3L8TQ", // 【添田町】英彦山ライブカメラ
+  "UUE6ExBO-KNOLxTHl6T8E6xQ", // わたらせコウノトリ ライブカメラ
+  "UU7qQJi_WE9yNhA48kP6TT0Q", // テレビ岩手TVIニュースチャンネル
+  "UU3Upaut8BeI-mkk2EhqtoKA", // 大友産業ライブ
+  "UUZd_tQ_bkn3X0qPqeullCXQ", // 株式会社南電工
+  "UUpeY0Kqqr90NaC2PsbJpCmg", // 話のわかる工務店【脇坂工務店ch】
+  "UUpp9pwi4t0rKWoGvKZaAESA", // ジャガイモンプロジェクト 北海道士幌町
+  "UUoAsABBSqFNjJyT2_TUGaLA", // 北海道網走市南四条東ライブカメラ
+  "UUcnyFxVfbsx8L3-B0rIFTLg", // オ野朝:oya
+  "UUZCRg4W6eUuvFvtdtQjzEbg", // 北海道稚内市中央お天気ライブカメラ
+  "UUq5rys-l2Q3m3UTblZyLtaQ", // 【北海道を盛り上げるtv!】酪大放送局 YouTubeチャンネル
+  "UUOjK4OYeD9qVZkJJHQKd1iQ", // ニッチワークス DIY
+  "UU1i47MzonAVfuCsEQQKHQ1w", // 北海道礼文郡礼文町船泊村大備ライブカメラ
+  "UUBHnUlgdM3S5bJyW8tovNOg", // 北海道札幌市北区西茨戸ライブカメラ
+  "UUp1PQJKoJfZcfAcYlOh8sKA", // Tetsu Kuro
+  "UUrMOS_QpjjeIjMKUMOm4_Qw", // ライブカメラDB
+  "UUOZv-6MiXqJdLpmYtR431Ow", // STVニュース北海道
+  "UU3PYjBjrkDT8ldDqZAPxG5g", // 北海道標津郡標津町南一条東  文化ホール方面ライブカメラ
+  "UUmaziVJb0MhG6QPiKolt2zQ", // 北海道室蘭市八丁平ライブカメラ
+  "UU8of44yHh-U747wJoo11jXw", // 北海道札幌市中央区北二条ライブカメラ
+  "UUDPcL7hccR_-xbagQ60kL7w", // 北海道網走市緑町ライブカメラ
+  "UUM01DB_H-5lPubIgNtzNmXw", // 北海道釧路市大川町釧路川河口ライブカメラ
+  "UUsf8dyphRqqn6jqrcwwSypg", // プルテウスレンタカー
+  "UUKygUybHX3A3Dmew4-MnqnA", // 北海道滝川市幸町ライブカメラ
+  "UUO78VjL2zm866J1YoqDZD-Q", // 北海道札幌市清田区美しが丘一条ライブカメラ
+  "UUDniwwb6FPDtoMsVSCVWi6A", // LIVE-HOKKAIDO
+  "UU3kfuS_vO1mxYP-YqDgHHHw", // 北海道利尻郡利尻町仙法志御崎海岸ライブカメラ
+  "UU8bU0LyP49R7pL49LFwsPsg", // 沖縄NOW!!
+  "UUn-Vvet39ErgdWj_iRxWDZw", // 沖縄県那覇市首里汀良町モノレールライブカメラ
+  "UUGe19IT7lTLHURGi1yZBGRw", // 定点カメラ部沖縄(Fixed point camera LOVE OKINAWA)
+  "UUw-gq5ojQF91k2ldN_VlnLg", // Mr.Kajiku /かじく
+  "UUYU8QIKLN7zJNdaNmf9ZUCw", // 【ヤンバルクイナと沖縄の生き物 LIVE】by 道の駅やんばるパイナップルの丘安波
+  "UUHmmmuYL1lhaTSvbz_YcrKg", // 沖縄県那覇市字識名お天気ライブカメラ
+  "UUU2Q1oGMqU1TWF8nIuoY4gg", // 沖縄県うるま市州崎ライブカメラ
+  "UUpTWzGUr4aS45kkpomvU0ww", // SAKURAYA CHANNEL OKINAWA
+  "UUbU9TQlRGeBGc9SjUYmsGAw", // 石垣島天文台　有松亘
+  "UUv89ldA5wRHQpPqPjy5NEJg", // KuROKO-宮古島映像-
+  "UUSgoguyyfrF5m2DpaVdFgMg", // AirTraffic Monitor Japan
+  "UUa-m_22VEF-ehvxNmici1OQ", // ニルヤカナヤBISE
+  "UUHB8-XbfawI0QsLTryrRnUA", // Live 3D Airport ATC + WX
+  "UULA5ElFgxFl2GIbZn440xTg", // 沖縄県島尻郡与那原町字与那原国道331号ライブカメラ
+  "UUyVf8FIJ-kFpzUadi7_tgZQ", // 京都観光混雑状況Live
+  "UUeSiVkT05ddY7j9UnbmyKIg", // HOTEL KUU KYOTO
+  "UUd_j7Zc1KmjHkVyvNIySehQ", // JR京都駅ライブカメラ(JR Kyoto Station LiveCam)
+  "UUjPBI3613W2r5R0_QH0_rZQ", // 京都 お天気ライブカメラ Kyoto Live Webcam
+  "UUw5a5uXLtBVfxvZlP02bCCQ", // kiyomizu monzen P
+  "UUbK8WglSwkj6R0nqcmZH_NQ", // butsuguya(京都の祭、観光地をモバイルライブ配信)
+  "UUGYs8S82QtfP__XHQmym1dQ", // KYOTO LIVE CAMERA
+  "UUMama-5_obWBruSuYI_GW8Q", // 【公式】Radio171
+  "UUL0qeZAgAypio9e0DOyujmg", // 京都府京都市左京区大文字山ライブカメラ
+  "UUoZukhk-EBlJbmOcPvHQaag", // 禅居庵
+  "UUHnyFp-W5IR5RvRmSYzOHkA", // 京都府八幡市岩田高木ライブカメラ
+  "UU6qB8_c5l6y1AJHL_7Rj4ug", // 京都府京都市左京区北白川久保田町ライブカメラ
+  "UUHS_cf4svIgX1HJl25wzWGQ", // 愛知県名古屋市天白区野並ライブカメラ
+  "UUL0xw6Ir2apIVIaq_ZxIq4A", // 愛知県名古屋市北区如意豊山町方面ライブカメラ
+  "UUUo7tLdPMCQZua_l6mmIt5A", // 愛知県名古屋市北区如意ライブカメラ
+  "UUvCU_ZbLKwxr4hvZO2ocoDA", // 愛知県名古屋市南区明治ライブカメラ
+  "UUeDyTJklgdeV7yVIYiU0Eww", // Ryuichi
+  "UUoMUBO51S9Rx_UzCFvCpscg", // 愛知県常滑市大野町 名鉄常滑線ライブカメラ
+  "UUzcJ9aYTmI1i6HOPShRmFcw", // 柳ケ瀬TV - 岐阜市 ライブカメラ Gifu Yanagase LIVE camera
+  "UU43jgy-6kAJu2kEyHuerdGQ", // NARITASAN SHINSHOJI
+  "UUs33DOFYmH27UiQ0twvZRAw", // K55
+  "UUV8cS-sTne-cXgYaZqY558A", // 緑川・国土交通省九州地方整備局水災害予報センター・熊本河川国道事務所
+  "UUVlb412e3-KxZlONLvqNvWw", // 菊池川・国土交通省九州地方整備局水災害予報センター・菊池川河川事務所
+  "UUM8imY-lXNP1t7XrXwP9o4A", // The Wayfarer
+  "UU8ZZlK9HyQ7WmLZbamIvwcg", // 球磨川・国土交通省九州地方整備局水災害予報センター・八代河川国道事務所
+  "UUdFxgT9x_8ClcEZACt7Ag2g", // 本明川・国土交通省九州地方整備局水災害予報センター・長崎河川国道事務所
+  "UUVsaJK99sGmHic5i9K2TKQw", // 遠賀川・国土交通省九州地方整備局水災害予報センター・遠賀川河川事務所
+  "UUZHJanz8FfXZ0yWrN2uksJw", // [公式]シーサイドホテル舞子ビラ神戸
+  "UUCn1d6KhxWkANtNgRU995Uw", // 白川・国土交通省九州地方整備局水災害予報センター・熊本河川国道事務所
+  "UUXjZvKda3koJ5wFzVMv7I2g", // 小丸川・国土交通省九州地方整備局水災害予報センター・宮崎河川国道事務所
+  "UUA0fKXM0CJ5dcQosR8pyxRQ", // 五ヶ瀬川・国土交通省九州地方整備局水災害予報センター・延岡河川国道事務所
+  "UU5u5693Lw0Zy7cd6yWjU6ZQ", // 嘉瀬川・国土交通省九州地方整備局水災害予報センター・武雄河川事務所
+  "UUR3gAq9N4mtRb2NUb7tyWig", // ニューガイアグループ広報
+  "UUosDdC0GnImjT6b39a0Ykag", // 【熊本の渋滞状況】コンドル!?
+  "UUcoGrsRbhwDXPXE_pW2ICzQ", // 川内川・国土交通省九州地方整備局水災害予報センター・川内川河川事務所
+  "UUFfacKhaGlkllMQiATeYCDw", // 山国川・国土交通省九州地方整備局水災害予報センター・山国川河川事務所
+  "UUxUHGYdQzshp0DPxHDy9_iQ", // KBN
+  "UU_MPR_BZ_39Vkd6MDSpIMkw", // 平等寺
+  "UUavlT0ICUqHulNOpbJN-FeA", // 八幡浜市役所
+  "UU0NG-mY688Tl5Kp5vqyw6Vg", // 一般社団法人いの町観光協会
+  "UUS5Lu_lvzsHqshSod39ncoQ", // 綾川町高山航空公園
+  "UUXvHEXCqzgz1jha1o-15bFA", // 笠置キャンプ場 Channel
+  "UUpRCfnReHSQfLfnZxb5YSqQ", // JBハイウェイサービス株式会社
+  "UUnVwMGjeDTN9CNqk89nxcJg", // 島民11人の島暮らし【でぃーぷまりん深島】
+  "UU4e4gaT5BGXjIZ67pmAAb1w", // 松山市清掃施設課チャンネル
 ];
 
 // 既定の設定（localStorageに無ければこれを使う）

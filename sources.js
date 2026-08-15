@@ -77,11 +77,11 @@ async function ytJson(path, params, key) {
   return res.json();
 }
 
-// プレイリスト→動画ID（最大3ページ=150件。build-catalog.mjs の PLAYLIST_PAGES と統一）
+// プレイリスト→動画ID（最大2ページ=100件。build-catalog.mjs の PLAYLIST_PAGES と統一）
 async function ytPlaylistVideoIds(playlistId, key) {
   const ids = [];
   let pageToken = "";
-  for (let page = 0; page < 3; page++) {
+  for (let page = 0; page < 2; page++) {
     const data = await ytJson("playlistItems", {
       part: "contentDetails",
       maxResults: "50",
