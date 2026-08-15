@@ -37,7 +37,8 @@ export const CATEGORIES = [
 // 中身は実行時/ビルド時に取得し「現在ライブ中」のみ表示するので、ここに死んだ配信が
 // 混ざっても表示には出ない。tools/build-catalog.mjs もこの配列をそのまま使う（単一ソース）。
 //   先頭8件 = 既存（全国キュレーション/伊豆小笠原港湾/外房サーフ）。
-//   以降107件 = 全国発掘（北海道→沖縄＋河川防災/空港港湾/観光温泉/動物園水族館/サーフ）。
+//   以降 = 全国発掘（北海道→沖縄＋河川防災/空港港湾/観光温泉/動物園水族館/サーフ）。
+//   計168件（2026-08に実在＆現在ライブ検証済みの53chを追加）。
 export const DEFAULT_PLAYLISTS = [
   // --- 既存 ---
   "PLM7jIABwhUkb41KUDAke1x8I0FmTL5Z4s", // 日本全国のライブカメラ（キュレーション）
@@ -166,6 +167,60 @@ export const DEFAULT_PLAYLISTS = [
   "UUfoiWJgMmg4p9olz1WE0-9A", // 江の島(HviewCam)片瀬海岸
   "UUQcj-JgG6XA0hGcTYWnK3ig", // 鳥羽水族館（ラッコ）
   "UURb3-Nt6Z6JQmJHMyMgsLkA", // 天王寺動物園（大阪）
+  // --- 全国発掘 追加（2026-08・実在＆現在ライブ検証済み53ch） ---
+  "UUFx5EVFYmFvlDwet2A_yimA", // 和歌山県 日高振興局管内 河川映像
+  "UUHZt37s-l_ZGuWcEMiFuSVA", // 山梨県南アルプス市・富士川町道路ライブカメラ
+  "UUPW5WTXsl41MHifOUcTjdag", // 和歌山県 海草振興局管内 河川映像
+  "UUZ1gP3mpttGH314cI8ByS-A", // イキテレチャンネル【壱岐市ケーブルテレビ】
+  "UU18wakGTIO6r-3e44biki3g", // 福島県 下郷町
+  "UUxmo6RuWtljvb5J_zTI22gQ", // 湘南サニーサイドマリーナ
+  "UUPldIceiQxfDX-nHAQOem7w", // 白馬村ライブチャンネル
+  "UUuE_--BXc0J7gIAtA_t4NnQ", // 1ちゃん!日本海テレビ
+  "UUqjC7sdgf78PUaZ2RSHvG_g", // 神奈川県海岸・港湾ライブカメラ
+  "UUK9eHUAiJeNA2i_1TcgZcfw", // 【KTV】ケーブルテレビ河口湖
+  "UUI-AmuPKmbTweBgZgTqjXuw", // 石川県土木部公園緑地課
+  "UUVFk3LGs7qDSlb9Sy8woSTw", // 穴水町公式チャンネル
+  "UUJKH8wYxFYeufDnvy1MPofA", // ZAZAマガジンチャンネル
+  "UUfCxyg8waxuAPxa8WmBY49g", // 渋谷センター商店街
+  "UUi4RF7aKUxthUM7U0PcGWIw", // 【公式】国宝松本城 / National Treasur
+  "UUhU3QHV-yZytG_AJgfL2bnw", // 諏訪湖八ヶ岳ライブカメラ  4994 Land
+  "UULpgVZwl9CaXierI3oq08mQ", // 京都市観光協会_Live配信
+  "UUzzNauFBCq3l7C9TrmiIo-g", // 川越TV
+  "UUFPHsl3dglA16jKQiLhxkiA", // 諏訪市公式チャンネル
+  "UUm9d_cxZig30MMDv09_o96g", // 王ヶ頭カメラ
+  "UUOLVB0iYK8ahQ0mFn-lF-8g", // SBSnews6
+  "UUj8MaS8DMpPHGraWX6pKPww", // WINK姫路ケーブルテレビ
+  "UUQIw-e2W8a1e628l4_P1ZfQ", // 札幌もいわ山ロープウェイ【公式】
+  "UU8NuNbL1frrbS4sQcFSClvQ", // 小樽天狗山ロープウエイ
+  "UULy0LVrhCARQJBfzc7PbdeA", // 秋田県仙北市
+  "UUujqw4iys19UVg2JYVfVsYA", // いわて花巻空港
+  "UUcOSt2pOCZgE7gndPPEwhAw", // 肘折温泉そば処寿屋
+  "UU8cnCaq-MquhsebMer9A9rQ", // 【公式】クロス新宿ビジョン
+  "UUoS1S0V-QdSl_xe29G8mKcQ", // 大丸有協議会
+  "UUpweG_uuLZhAH9B_Spwmmzg", // 原宿駅・表参道口 ライブカメラ [Harajuku Li
+  "UUy8wXIvONgiQV4jZEFE6aWQ", // 奥日光湯元温泉 湯〜Tube
+  "UUL3peEBSiAkEMDuxNkffbvw", // YBS山梨放送 公式チャンネル
+  "UU3i9y6EYpXlvrHLm2wMbOkQ", // 新穂高ロープウェイ
+  "UUYAWCLkbY1Heu4tm8SR2-2w", // 七尾市公式YouTubeチャンネルNanao_city
+  "UUSgouYRapy1btrfHNrVGKFQ", // 株式会社御前崎ケーブルテレビ(まおまお)
+  "UUDGTtJ3Uoy-zs9hSV8ZBytw", // 磐田市危機管理課
+  "UUAjRtFIaNvQznbHytYyzUbA", // 長野県大町市
+  "UUG9GvkBdKWMn4VDe-GYkg5A", // 天神橋筋商店街から チャンネル
+  "UUYIl6Yf96xN0ge-g_bo5JtA", // 芦有ドライブウェイ【公式】
+  "UUOKyln0jsZIF_-YKD8buHsA", // 高取町まちづくり課
+  "UU2V-P3qfNnPJCDtPyOE-yfg", // 河内長野市役所
+  "UU73QFSdUY5fMNZtgnhBjlRg", // 【公式】宮島観光協会
+  "UURnFGOp_mjaCYEhMzsE2iHA", // 【公式】HOME広島ニュース
+  "UU_LC3G1PYFx3FzeOehzz-lg", // 錦帯橋課公式チャンネル
+  "UUiPXMbP2P1OFvY9LMs22mUA", // 備中松山城雲海展望台ライブカメラ
+  "UUlAtpDytL1hmOUeiJaNrHlQ", // 【公式】道後温泉
+  "UU-2L3iPWxVyvvnPLplpdCHA", // 【公式】南海放送NEWS（チャン４）
+  "UUIf6siGkL7JdkyPkDwgYD2Q", // 三島ポートサービス
+  "UUkTCKXGQwSr2apB6x0ITNvw", // きんかめちゃんねる
+  "UUNEVajGIlWJHvUysEv-Y0CA", // 博多 中洲コマーシャルチャンネル
+  "UUpOBAWYh0T5Zz5S7uKIiEmQ", // 長崎ケーブルメディア[公式]
+  "UUMj5mfLSlOmx-rOpquoErDQ", // 岡垣町観光協会のまいにち
+  "UUVg0E1H6LZBhTt_2oSm2Hzg", // バクノビジョン
 ];
 
 // 既定の設定（localStorageに無ければこれを使う）
