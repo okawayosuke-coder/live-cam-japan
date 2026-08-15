@@ -429,8 +429,6 @@ export const DEFAULT_PLAYLISTS = [
   "UURRJZCkzKBkBG1N7duHu6Iw", // エルシーブイ株式会社
   "UUdI9Vn0aIzNOdlIZkAy-VnA", // official MIZNO HOTEL
   "UUaxxRyMskvvbpQMo-VJpNhw", // EN DAIBA GLOBAL
-  "UUudHmG80OydTxJzb-a1FGxA", // 夏コミ・冬コミ待機列やイベント風景を撮影定点観測する放送局
-  "UU-NuZ8QbpIIDK8ZhzsOyEpQ", // CAHAYA BULAN
   "UUiVxzgxfn4OhuDygv5o5-mg", // Kariyushi Hotels
   "UUN4r4N7n0nRmyfWbzXHi-Xg", // Motobu Terrace
   "UUkUdb6wh-TE9MK7Q2VTE5-A", // 静岡市さった峠 ライブカメラ

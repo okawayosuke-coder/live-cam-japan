@@ -58,7 +58,7 @@ const EXCLUDE_CHANNELS = new Set([
   "Digital Eye Field Lab CTS", "Armchair Traveler", "Earth Now", "もふもふペットCafe", "ウミネコ商店",
   "株式会社ティーファイブプロジェクト", "JDQ-地震情報",
 ]);
-const EXCLUDE_TITLE_RX = /ニュースまとめ|昼のニュース|24H ?NEWS|NEWS LIVE NOW|Japan News Digest|緊急地震速報|地震速報ライブ|WORLD-JAPAN News/i;
+const EXCLUDE_TITLE_RX = /ニュースまとめ|昼のニュース|24H ?NEWS|NEWS LIVE NOW|Japan News Digest|緊急地震速報|地震速報ライブ|WORLD-JAPAN News|最新ニュース|コミックマーケット|待機列/i;
 
 async function ytJson(path, params, key) {
   const usp = new URLSearchParams({ ...params, key });
