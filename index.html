@@ -9,8 +9,10 @@
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
         integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
-  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css">
-  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css"
+        integrity="sha256-YU3qCpj/P06tdPBJGPax0bm6Q1wltfwjsho5TR4+TYc=" crossorigin="">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css"
+        integrity="sha256-YSWCMtmNZNwqex4CEw1nQhvFub2lmU7vcCKP+XVwwXA=" crossorigin="">
   <link rel="stylesheet" href="./styles.css">
 </head>
 <body>
@@ -39,7 +41,7 @@
     </div>
   </header>
 
-  <div id="statusbar" class="statusbar">起動中…</div>
+  <div id="statusbar" class="statusbar" role="status" aria-live="polite">起動中…</div>
   <div id="keywarn" class="keywarn" hidden>⚠ 公開環境で動作中：ブラウザにAPIキーが露出します。Google Cloud / Windy のコンソールでキーに<strong>ドメイン/リファラ制限</strong>を設定してください。</div>
 
   <main class="layout">
@@ -51,7 +53,7 @@
 
   <!-- 再生モーダル -->
   <div id="modal" class="overlay">
-    <div class="dialog">
+    <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
       <header class="dlghead">
         <h2 id="modalTitle"></h2>
         <button id="modalClose" class="x" aria-label="閉じる">✕</button>
@@ -62,9 +64,9 @@
 
   <!-- 設定モーダル -->
   <div id="settings" class="overlay">
-    <div class="dialog narrow">
+    <div class="dialog narrow" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
       <header class="dlghead">
-        <h2>設定</h2>
+        <h2 id="settingsTitle">設定</h2>
         <button id="settingsClose" class="x" aria-label="閉じる">✕</button>
       </header>
       <div class="dlgbody settingsbody">
@@ -106,10 +108,11 @@
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
           integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-  <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+  <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"
+          integrity="sha256-Hk4dIpcqOSb0hZjgyvFOP+cEmDXUKKNE/tT542ZbNQg=" crossorigin=""></script>
   <!-- ローカル専用のキー設定（任意・gitignore済み）。編集が即反映されるようキャッシュ回避で読み込む。無ければ404が出るだけで動作に影響なし -->
   <script>document.write('<script src="./config.local.js?cb=' + Date.now() + '"><\/script>');</script>
-  <script type="module" src="./app.js?v=6"></script>
+  <script type="module" src="./app.js?v=7"></script>
   <!-- PWA: Service Worker（ネットワーク優先・オフライン時のみキャッシュ） -->
   <script>
     if ("serviceWorker" in navigator) {

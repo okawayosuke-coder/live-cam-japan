@@ -1,8 +1,8 @@
 // ============================================================================
 // app.js  ―  統合・描画・地図・ライブ判定
 // ============================================================================
-import { REGIONS, CATEGORIES, loadSettings, saveSettings } from "./config.js?v=6";
-import { fetchYouTube, fetchWindy, fetchDirect, probeImage } from "./sources.js?v=6";
+import { REGIONS, CATEGORIES, loadSettings, saveSettings } from "./config.js?v=7";
+import { fetchYouTube, fetchWindy, fetchDirect, probeImage } from "./sources.js?v=7";
 
 const $ = (sel) => document.querySelector(sel);
 const $$ = (sel) => Array.from(document.querySelectorAll(sel));
@@ -23,7 +23,7 @@ const state = {
   catalogGeneratedAt: null,
 };
 
-const SOURCE_LABEL = { youtube: "YouTube", windy: "Windy", direct: "直リンク" };
+const SOURCE_LABEL = { youtube: "YouTube", windy: "Windy", direct: "直リンク", catalog: "公開データ" };
 const STATUS_META = {
   live:       { label: "稼働中",   cls: "ok",   color: "#22c55e" },
   reported:   { label: "稼働(報告)", cls: "rep",  color: "#14b8a6" },
@@ -152,6 +152,7 @@ async function loadAll({ force = false } = {}) {
   const onError = (src, msg) => { state.errors[src] = msg; render(); };
   // 鍵なし = 公開モード → ビルド時生成の静的カタログを読む（クライアントにキー不要・クォータ消費なし）
   const deployed = !s.youtubeApiKey && !s.windyApiKey;
+  state.deployed = deployed; // 空状態の文言出し分け等で参照
   const jobs = [];
   if (deployed) {
     jobs.push(loadCatalog().then(merge).catch(() => onError("catalog", "公開カタログ未生成（data/catalog.json）。ローカルは設定でAPIキーを追加")));
@@ -210,8 +211,13 @@ function visibleCameras() {
 
 function statusRank(s) { return { live: 0, reported: 1, checking: 2, unverified: 3, offline: 4 }[s] ?? 9; }
 
+// フィルタ後→ステータス→名前 の確定順（render とカードのみ再描画で共有）
+function sortedVisible() {
+  return visibleCameras().sort((a, b) => statusRank(a.status) - statusRank(b.status) || a.title.localeCompare(b.title, "ja"));
+}
+
 function render() {
-  const cams = visibleCameras().sort((a, b) => statusRank(a.status) - statusRank(b.status) || a.title.localeCompare(b.title, "ja"));
+  const cams = sortedVisible();
   renderCards(cams);
   renderMarkers(cams);
   renderStats(cams);
@@ -231,7 +237,7 @@ function renderStats(cams) {
   setStatusBar(msg);
 }
 
-function setStatusBar(text) { $("#statusbar").textContent = text; }
+function setStatusBar(text) { const el = $("#statusbar"); el.textContent = text; el.title = text; /* 省略時も全文をホバーで確認可能に */ }
 
 function cardHtml(cam) {
   const sm = STATUS_META[cam.status] || STATUS_META.unverified;
@@ -247,7 +253,7 @@ function cardHtml(cam) {
       <div class="thumbwrap">
         ${thumbHtml}
         <span class="badge ${sm.cls}">${sm.label}</span>
-        <span class="srcchip s-${cam.source}">${SOURCE_LABEL[cam.source]}</span>
+        <span class="srcchip s-${escapeAttr(cam.source)}">${SOURCE_LABEL[cam.source] || cam.source}</span>
         <button class="favbtn${faved ? " on" : ""}" data-fav="${escapeAttr(cam.id)}" aria-label="お気に入り" aria-pressed="${faved}">${faved ? "★" : "☆"}</button>
         ${fresh}
       </div>
@@ -262,7 +268,16 @@ function renderCards(cams) {
   const grid = $("#grid");
   if (state.loading && !cams.length) return; // スケルトン表示中は維持
   if (!cams.length) {
-    grid.innerHTML = `<div class="empty">該当するカメラがありません。<br>設定でAPIキーを追加するか、「稼働中のみ」をオフにしてみてください。</div>`;
+    const f = state.filters;
+    const filtering = f.q || f.region !== "all" || f.category !== "all" || f.source !== "all" || f.fav;
+    // 公開モードの訪問者はAPIキーを設定しないため、状況に応じた案内に出し分ける
+    const advice = filtering
+      ? "検索・地方・カテゴリ・お気に入りの絞り込みを緩めてみてください。"
+      : (state.deployed
+          ? "現在表示できる稼働中カメラがありません。時間をおいて再度お試しください。"
+          : "設定でAPIキーを追加するか、「稼働中のみ」をオフにしてみてください。");
+    const clearBtn = filtering ? `<br><button id="clearFilters" class="btn" style="margin-top:14px">絞り込みをクリア</button>` : "";
+    grid.innerHTML = `<div class="empty">該当するカメラがありません。<br>${advice}${clearBtn}</div>`;
     return;
   }
   const limit = state.visibleLimit || CARDS_PER_PAGE;
@@ -287,15 +302,20 @@ function approxJitter(id = "") {
 function renderMarkers(cams) {
   state.layer.clearLayers();
   state.markers.clear();
+  const arr = [];
   for (const cam of cams) {
     if (cam.lat == null || cam.lng == null) continue;
     let lat = cam.lat, lng = cam.lng;
     if (cam.approxLocation) { const [dy, dx] = approxJitter(cam.id); lat += dy; lng += dx; }
     const m = L.marker([lat, lng], { icon: markerIcon(cam.status, cam.approxLocation), title: cam.title + (cam.approxLocation ? "（推定位置）" : "") });
     m.on("click", () => openModal(cam.id));
-    m.addTo(state.layer);
+    arr.push(m);
     state.markers.set(cam.id, m);
   }
+  // markerClusterGroup は addLayers で一括投入（chunkedLoading が効き、都度の増分クラスタ更新を避ける）。
+  // 素の L.layerGroup は addLayers 非対応なので個別 addTo にフォールバック。
+  if (typeof state.layer.addLayers === "function") state.layer.addLayers(arr);
+  else arr.forEach((m) => m.addTo(state.layer));
 }
 
 // プローブ後など、1件だけ反映（再描画は最終的にrenderで）
@@ -325,7 +345,7 @@ function ensureYTApi() {
 function ytFallbackHtml(cam) {
   return `<div class="player noimg openyt">
     <div class="ytmsg">このカメラは配信者の設定でサイト内再生ができません</div>
-    <a class="btn primary" href="${escapeAttr(cam.detailUrl)}" target="_blank" rel="noopener">▶ YouTubeで見る ↗</a>
+    <a class="btn primary" href="${escapeAttr(safeUrl(cam.detailUrl))}" target="_blank" rel="noopener">▶ YouTubeで見る ↗</a>
   </div>`;
 }
 function destroyYtPlayer() {
@@ -368,6 +388,9 @@ function openModal(id) {
   const cam = state.cameras.find((c) => c.id === id);
   if (!cam) return;
   destroyYtPlayer(); // 前回のプレーヤーを掃除
+  // 画像更新インターバルも掃除（destroyYtPlayer との対称性。再オープン時のタイマーリーク防止）
+  if (state._imgTimer) { clearInterval(state._imgTimer); state._imgTimer = null; }
+  state._lastFocus = document.activeElement; // 閉じたとき起点へフォーカスを戻すため保持
   const body = $("#modalBody");
   const sm = STATUS_META[cam.status] || STATUS_META.unverified;
   let player = "";
@@ -381,8 +404,10 @@ function openModal(id) {
     // IFrame APIで再生。失敗(onError/タイムアウト)時は誘導パネルへ切替。
     player = `<div id="ytplayer" class="player"></div>`;
     initYt = true;
-  } else if (cam.embedUrl) {
-    player = `<iframe class="player" src="${escapeAttr(cam.embedUrl)}" allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowfullscreen referrerpolicy="no-referrer"></iframe>`;
+  } else if (cam.embedUrl && safeUrl(cam.embedUrl)) {
+    // sandbox で埋め込み先の権限を制限（allow-top-navigation は付けない＝トップ遷移によるフィッシングを防ぐ）。
+    // Windy/直リンクプレーヤーの再生に必要な scripts/same-origin/popups/presentation は許可。
+    player = `<iframe class="player" src="${escapeAttr(safeUrl(cam.embedUrl))}" sandbox="allow-scripts allow-same-origin allow-popups allow-presentation allow-forms" allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowfullscreen referrerpolicy="no-referrer"></iframe>`;
   } else {
     player = `<div class="player noimg">埋め込み不可。下のリンクから開いてください。</div>`;
   }
@@ -392,15 +417,18 @@ function openModal(id) {
     <div class="playerwrap">${player}</div>
     <div class="modalmeta">
       <span class="badge ${sm.cls}">${sm.label}</span>
-      <span class="srcchip s-${cam.source}">${SOURCE_LABEL[cam.source]}</span>
+      <span class="srcchip s-${escapeAttr(cam.source)}">${SOURCE_LABEL[cam.source] || cam.source}</span>
       <button id="modalFav" class="favbtn inline${faved ? " on" : ""}" aria-label="お気に入り" aria-pressed="${faved}">${faved ? "★ お気に入り" : "☆ お気に入り"}</button>
       ${cam.place ? `<span class="mplace">${escapeHtml(cam.place)}</span>` : ""}
       ${cam.note ? `<span class="mnote">${escapeHtml(cam.note)}</span>` : ""}
       ${cam.source === "windy" && cam.lastChecked ? `<span class="mnote">🕒 更新 ${relTime(cam.lastChecked)}</span>` : ""}
       ${cam.approxLocation ? `<span class="mnote">📍 地図上の位置は名称からの推定です</span>` : ""}
-      ${cam.detailUrl ? `<a class="ext" href="${escapeAttr(cam.detailUrl)}" target="_blank" rel="noopener">元ページを開く ↗</a>` : ""}
+      ${safeUrl(cam.detailUrl) ? `<a class="ext" href="${escapeAttr(safeUrl(cam.detailUrl))}" target="_blank" rel="noopener">元ページを開く ↗</a>` : ""}
     </div>`;
   $("#modal").classList.add("open");
+  // アクセシビリティ: ダイアログ内へフォーカスを移す（背後にフォーカスが残らないように）
+  const closeBtn = $("#modalClose");
+  if (closeBtn) closeBtn.focus();
   const mf = $("#modalFav");
   if (mf) mf.addEventListener("click", () => {
     toggleFav(cam.id);
@@ -420,11 +448,30 @@ function openModal(id) {
     }, 5000);
   }
 }
+// 開いているダイアログ内に Tab フォーカスを閉じ込める（背後の要素へ抜けさせない）
+function trapTab(e) {
+  const dlg = $("#modal").classList.contains("open") ? $("#modal .dialog")
+            : $("#settings").classList.contains("open") ? $("#settings .dialog") : null;
+  if (!dlg) return;
+  const list = Array.from(dlg.querySelectorAll(
+    'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+  )).filter((el) => el.offsetParent !== null);
+  if (!list.length) return;
+  const first = list[0], last = list[list.length - 1];
+  if (!dlg.contains(document.activeElement)) { e.preventDefault(); first.focus(); }
+  else if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+  else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+}
+
 function closeModal() {
   $("#modal").classList.remove("open");
   destroyYtPlayer();
   $("#modalBody").innerHTML = "";
   if (state._imgTimer) { clearInterval(state._imgTimer); state._imgTimer = null; }
+  // 起点要素へフォーカスを復元（キーボード操作の連続性）
+  const back = state._lastFocus;
+  state._lastFocus = null;
+  if (back && typeof back.focus === "function" && document.contains(back)) back.focus();
 }
 
 // ---- 設定モーダル ----------------------------------------------------------
@@ -439,7 +486,16 @@ function openSettings() {
   $("#setSrcYt").checked = !!s.enabledSources.youtube;
   $("#setSrcWindy").checked = !!s.enabledSources.windy;
   $("#setSrcDirect").checked = !!s.enabledSources.direct;
+  state._lastFocusS = document.activeElement; // 閉じたとき起点へ戻す
   $("#settings").classList.add("open");
+  const c = $("#settingsClose");
+  if (c) c.focus();
+}
+function closeSettings() {
+  $("#settings").classList.remove("open");
+  const back = state._lastFocusS;
+  state._lastFocusS = null;
+  if (back && typeof back.focus === "function" && document.contains(back)) back.focus();
 }
 function saveSettingsFromForm() {
   const playlists = $("#setYtPlaylists").value.split(",").map((x) => x.trim()).filter(Boolean);
@@ -456,7 +512,8 @@ function saveSettingsFromForm() {
       direct: $("#setSrcDirect").checked,
     },
   });
-  $("#settings").classList.remove("open");
+  closeSettings();
+  maybeWarnKeyExposure(); // キー保存でライブモードに入る場合、露出警告を即時再評価（リロード待ちにしない）
   loadAll();
 }
 
@@ -475,6 +532,18 @@ function applyFilter() {
   state.visibleLimit = CARDS_PER_PAGE;
   render();
   syncHash();
+}
+// 全フィルタを初期化してコントロール値も同期（空状態の「絞り込みをクリア」から）
+function clearFilters() {
+  state.filters = { q: "", region: "all", category: "all", source: "all", fav: false };
+  $("#fRegion").value = "all";
+  $("#fCategory").value = "all";
+  $("#fSource").value = "all";
+  $("#fSearch").value = "";
+  $("#fFav").classList.remove("on");
+  $("#fFav").setAttribute("aria-pressed", "false");
+  if (state.map) state.map.flyTo([37.8, 137.5], 5, { duration: 0.6 });
+  applyFilter();
 }
 // 共有可能なURL（#r=kanto&c=coast&q=...）に状態を反映
 function syncHash() {
@@ -503,6 +572,11 @@ function applyHashToUI() {
   $("#fSearch").value = f.q;
   $("#fFav").classList.toggle("on", f.fav);
   $("#fFav").setAttribute("aria-pressed", String(f.fav));
+  // 共有URL(#r=kanto 等)で開いたとき、カード一覧だけでなく地図も当該地方へ寄せる（手動変更時と同挙動）
+  if (f.region !== "all" && state.map) {
+    const r = REGIONS.find((x) => x.id === f.region);
+    if (r) state.map.flyTo(r.center, 7, { duration: 0.6 });
+  }
 }
 
 function wireUI() {
@@ -533,16 +607,39 @@ function wireUI() {
   $("#btnRefresh").addEventListener("click", () => loadAll({ force: true }));
   $("#btnSettings").addEventListener("click", openSettings);
   $("#settingsSave").addEventListener("click", saveSettingsFromForm);
-  $("#settingsClose").addEventListener("click", () => $("#settings").classList.remove("open"));
+  $("#settingsClose").addEventListener("click", closeSettings);
   $("#modalClose").addEventListener("click", closeModal);
   $("#modal").addEventListener("click", (e) => { if (e.target.id === "modal") closeModal(); });
-  $("#settings").addEventListener("click", (e) => { if (e.target.id === "settings") $("#settings").classList.remove("open"); });
-  document.addEventListener("keydown", (e) => { if (e.key === "Escape") { closeModal(); $("#settings").classList.remove("open"); } });
+  $("#settings").addEventListener("click", (e) => { if (e.target.id === "settings") closeSettings(); });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") { closeModal(); closeSettings(); }
+    else if (e.key === "Tab") trapTab(e);
+  });
   // グリッドのクリック委譲: お気に入り / もっと見る / カード
   $("#grid").addEventListener("click", (e) => {
     const fav = e.target.closest(".favbtn");
-    if (fav) { e.stopPropagation(); toggleFav(fav.dataset.fav); render(); return; }
-    if (e.target.closest("#moreBtn")) { state.visibleLimit += CARDS_PER_PAGE; render(); return; }
+    if (fav) {
+      e.stopPropagation();
+      toggleFav(fav.dataset.fav);
+      if (state.filters.fav) {
+        render(); // ★フィルタON時は表示集合が変わるので全描画
+      } else {
+        // 集合不変: 押した★の見た目だけその場更新（全カード再生成＋マーカー再構築を回避し、フォーカスも維持）
+        const on = isFav(fav.dataset.fav);
+        fav.classList.toggle("on", on);
+        fav.setAttribute("aria-pressed", String(on));
+        fav.textContent = on ? "★" : "☆";
+      }
+      return;
+    }
+    if (e.target.closest("#moreBtn")) {
+      state.visibleLimit += CARDS_PER_PAGE;
+      renderCards(sortedVisible()); // マーカー・統計は visibleLimit 非依存なのでカードのみ再描画
+      const more = $("#moreBtn");
+      if (more) more.focus(); // 連続読み込みのキーボードフォーカスを維持
+      return;
+    }
+    if (e.target.closest("#clearFilters")) { clearFilters(); return; }
     const card = e.target.closest(".card");
     if (card && !card.classList.contains("skel")) openModal(card.dataset.id);
   });
@@ -556,6 +653,12 @@ function wireUI() {
 function escapeHtml(s = "") { return s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }
 function escapeAttr(s = "") { return escapeHtml(String(s)); }
 function cssEscape(s = "") { return (window.CSS && CSS.escape) ? CSS.escape(s) : s.replace(/["\\]/g, "\\$&"); }
+// href/iframe src 用: http/https 以外（javascript: 等）を弾く。第三者API/カタログ由来URLのスキームインジェクション対策。
+function safeUrl(u) {
+  if (!u) return "";
+  try { const p = new URL(u, location.href); return (p.protocol === "http:" || p.protocol === "https:") ? u : ""; }
+  catch (_) { return ""; }
+}
 
 // 公開ドメインで動いている場合、ブラウザにAPIキーが露出する旨を警告
 function maybeWarnKeyExposure() {

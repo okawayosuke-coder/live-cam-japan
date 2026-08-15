@@ -100,7 +100,8 @@ body {
 .favbtn {
   position: absolute; top: 6px; right: 8px; z-index: 2;
   background: rgba(8,14,26,.7); color: #9fb2cc; border: 1px solid rgba(255,255,255,.12);
-  border-radius: 8px; min-width: 28px; height: 26px; font-size: 15px; line-height: 1; cursor: pointer; padding: 0 5px;
+  border-radius: 8px; min-width: 34px; height: 32px; font-size: 15px; line-height: 1; cursor: pointer; padding: 0 6px;
+  display: flex; align-items: center; justify-content: center;   /* タップ領域を拡大（星は中央寄せ） */
 }
 .favbtn:hover { border-color: #ffd24a; color: #ffd24a; }
 .favbtn.on { color: #ffd24a; border-color: rgba(255,210,74,.5); }
@@ -133,8 +134,8 @@ body {
 .badge.ok { background: var(--ok); }
 .badge.rep { background: var(--rep); }
 .badge.chk { background: var(--chk); color: #1a2433; }
-.badge.unv { background: var(--unv); color: #e7eef8; }
-.badge.off { background: var(--off); color: #fff; }
+.badge.unv { background: #475569; color: #e7eef8; }   /* AA 4.5:1 確保（--unv #64748b は未達） */
+.badge.off { background: #dc2626; color: #fff; }       /* AA 4.5:1 確保（--off #ef4444 は未達） */
 .srcchip {
   position: absolute; bottom: 8px; right: 8px;
   font-size: 10px; padding: 2px 7px; border-radius: 6px;
@@ -169,7 +170,7 @@ body {
 .dialog.narrow { width: min(520px, 96vw); }
 .dlghead { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid var(--line); }
 .dlghead h2 { font-size: 15px; margin: 0; }
-.x { background: none; border: none; color: var(--muted); font-size: 18px; cursor: pointer; }
+.x { background: none; border: none; color: var(--muted); font-size: 18px; cursor: pointer; padding: 8px; min-width: 40px; min-height: 40px; line-height: 1; display: flex; align-items: center; justify-content: center; }
 .x:hover { color: var(--text); }
 .dlgbody { padding: 14px 16px; overflow-y: auto; }
 .playerwrap { aspect-ratio: 16/9; background: #000; border-radius: 10px; overflow: hidden; }

@@ -5,10 +5,10 @@
 //       → コード更新が即反映され「古いキャッシュで動く」問題を起こさない。
 // 対象: 同一オリジンのGETのみ。YouTube/Windy/地図タイル等の外部は素通し。
 // ============================================================================
-const CACHE = "lcj-shell-v6";
+const CACHE = "lcj-shell-v7";
 const SHELL = [
   "./", "./index.html", "./styles.css",
-  "./app.js?v=6", "./config.js?v=6", "./sources.js?v=6",
+  "./app.js?v=7", "./config.js?v=7", "./sources.js?v=7", "./geo.js?v=7",
   "./manifest.webmanifest", "./icon.svg",
 ];
 
@@ -38,8 +38,12 @@ self.addEventListener("fetch", (e) => {
   e.respondWith(
     fetch(e.request)
       .then((res) => {
-        const copy = res.clone();
-        caches.open(CACHE).then((c) => c.put(e.request, copy)).catch(() => {});
+        // 成功応答のみキャッシュ。404等の失敗応答や、毎回一意キーになるキャッシュバスト付き
+        // (config.local.js?cb=Date.now()) は put せず、Cache Storage の際限ない肥大化・404汚染を防ぐ。
+        if (res.ok && !url.searchParams.has("cb")) {
+          const copy = res.clone();
+          caches.open(CACHE).then((c) => c.put(e.request, copy)).catch(() => {});
+        }
         return res;
       })
       .catch(() => caches.match(e.request).then((r) => r || caches.match("./index.html")))

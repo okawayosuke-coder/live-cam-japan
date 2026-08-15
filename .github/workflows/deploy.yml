@@ -5,6 +5,8 @@ on:
     - cron: "0 */6 * * *"   # 6時間ごとに更新（115再生リスト＋8検索≈1100ユニット/回×4回/日≈4600/日・無料枠1万内）
   push:
     branches: [main]
+    paths-ignore:           # ドキュメントのみの更新ではカタログ再ビルド(≈1,100ユニット)を走らせない
+      - '**/*.md'
   workflow_dispatch:        # 手動実行も可
 
 permissions:
