@@ -34,6 +34,9 @@ const PLAYLISTS = DEFAULT_PLAYLISTS;
 const SEARCH_QUERIES = [
   "ライブカメラ", "富士山 ライブ", "海 ライブカメラ", "空港 ライブカメラ",
   "河川 ライブカメラ", "道路 ライブカメラ", "サーフ ライブカメラ", "live camera japan",
+  // 追加（現在ライブ中カメラを全ch横断で拾う・カテゴリ網羅）
+  "湖 ライブカメラ", "温泉 ライブカメラ", "商店街 ライブカメラ", "展望台 ライブカメラ",
+  "駅 ライブカメラ", "港 ライブカメラ", "夜景 ライブカメラ", "城 ライブカメラ",
 ];
 const PLAYLIST_PAGES = 2; // 1プレイリストあたり最大ページ数（50件/ページ）。472本に拡大したためクォータ配慮で2ページ（発掘時も2ページで実効確認済み）
 
@@ -132,7 +135,7 @@ async function fetchWindy() {
   if (!WINDY_KEY) { console.warn("  (WINDY_API_KEY未設定→Windyスキップ)"); return []; }
   const byId=new Map();
   for (const r of REGIONS) {
-    for (let offset=0;offset<250;offset+=50) {
+    for (let offset=0;offset<500;offset+=50) {
       const usp=new URLSearchParams({bbox:`${r.n},${r.e},${r.s},${r.w}`,include:"categories,images,location,player,urls",limit:"50",offset:String(offset)});
       const res=await fetch(`${WINDY}?${usp}`,{headers:{"x-windy-api-key":WINDY_KEY}});
       if (!res.ok) { console.warn(`  Windy ${r.name} HTTP ${res.status}`); break; }

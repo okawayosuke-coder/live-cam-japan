@@ -273,7 +273,7 @@ async function windyClientFetch(settings, regions) {
   const key = settings.windyApiKey.trim();
   const byId = new Map();
   for (const r of regions) {
-    for (let offset = 0; offset < 250; offset += 50) {
+    for (let offset = 0; offset < 500; offset += 50) {
       const usp = new URLSearchParams({
         bbox: `${r.n},${r.e},${r.s},${r.w}`, // N,E,S,W
         include: "categories,images,location,player,urls",
