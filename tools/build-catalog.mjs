@@ -163,7 +163,7 @@ async function main() {
   // デプロイせず exit1 で中止（deploy.yml の後続 upload/deploy をスキップ＝直前の公開カタログを維持）。
   // 通常は総数≈2,400件。クォータ超過で YouTube がほぼ0に落ちると Windy(~1,000)のみで FLOOR を下回る。
   // クォータを終盤で超過し大半を確保できた場合(>=FLOOR)は、そのまま最新カタログとしてデプロイ続行。
-  const FLOOR = 1500;
+  const FLOOR = 2000;
   if (!cameras.length || (quotaHit && cameras.length < FLOOR)) {
     console.error(`✗ ${!cameras.length ? "生成0件" : `YouTubeクォータ超過で不完全(${cameras.length}件<${FLOOR})`}。既存カタログ保護のためデプロイ中止。`);
     process.exit(1);
