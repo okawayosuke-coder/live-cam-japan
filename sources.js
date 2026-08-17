@@ -368,7 +368,9 @@ export async function fetchDirect(onError) {
       detailUrl: c.detailUrl || c.sourceUrl || null,
       // 画像タイプはプローブで確定。iframeタイプは maintainer が出典確認済みの登録なので
       // 「稼働(報告)」扱いにして既定の「稼働中のみ」フィルタを通す（unverified だと黙って消えるため）。
-      status: embedType === "image" ? "checking" : "reported",
+      // cameras.json で status を明示した場合は尊重（大量ソースはプローブ省略＝"reported"）。
+      // 未指定の画像は従来どおり "checking"→クライアントで死活確認。
+      status: c.status || (embedType === "image" ? "checking" : "reported"),
       note: c.credit ? `出典: ${c.credit}` : "",
       lastChecked: null,
       // 出典・ライセンス表示用
