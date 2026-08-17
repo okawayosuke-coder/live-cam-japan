@@ -153,17 +153,53 @@ async function fetchWindy() {
   return [...byId.values()];
 }
 
+// 公開中のカタログ（前回ビルド結果）を取得。クォータ超過時のフォールバック用。
+const DEPLOYED_URL = "https://okawayosuke-coder.github.io/live-cam-japan/data/catalog.json";
+async function fetchDeployedCatalog() {
+  try {
+    const res = await fetch(`${DEPLOYED_URL}?cb=${Date.now()}`);
+    if (!res.ok) return null;
+    const d = await res.json();
+    return Array.isArray(d.cameras) ? d.cameras : null;
+  } catch { return null; }
+}
+// カメラの title/place から座標・地域を現在の geo.js で再計算（辞書更新を反映）。
+function regeocode(c) {
+  const text = `${c.title} ${c.place || ""}`;
+  const guessed = guessRegion(text);
+  const geo = geocodeTitle(text, guessed);
+  const region = geo ? (regionOf(geo.lat, geo.lng) || guessed) : guessed;
+  return { ...c, lat: geo?.lat ?? null, lng: geo?.lng ?? null, approxLocation: !!geo, region };
+}
+
 async function main() {
   console.log("公開用カタログを生成中…");
   const [yt, windy] = await Promise.all([fetchYouTube(), fetchWindy()]);
   const byId=new Map();
   for (const c of [...yt, ...windy]) if (!byId.has(c.id)) byId.set(c.id, c);
-  const cameras=[...byId.values()];
-  // 既存カタログ保護: 0件、または YouTubeクォータ超過で大きく欠けた不完全カタログ(<FLOOR≒Windyのみ相当)は
-  // デプロイせず exit1 で中止（deploy.yml の後続 upload/deploy をスキップ＝直前の公開カタログを維持）。
-  // 通常は総数≈2,400件。クォータ超過で YouTube がほぼ0に落ちると Windy(~1,000)のみで FLOOR を下回る。
-  // クォータを終盤で超過し大半を確保できた場合(>=FLOOR)は、そのまま最新カタログとしてデプロイ続行。
+  let cameras=[...byId.values()];
+
+  // 通常は総数≈2,400件。クォータ超過でYouTubeがほぼ0に落ちるとWindy(~1,000)のみでFLOORを下回る。
   const FLOOR = 2000;
+
+  // フォールバック: YouTubeクォータ超過で大きく欠けた場合、公開中カタログのカメラを
+  // 現在の geo.js で再ジオコーディングして再利用する（新鮮なWindyは今回分を使用）。
+  // これで①サイトがWindyのみに転落しない ②geo.jsの辞書修正(座標是正)はクォータ枯渇中でも反映される。
+  if (quotaHit && cameras.length < FLOOR) {
+    const prev = await fetchDeployedCatalog();
+    if (prev && prev.length) {
+      const prevYt = prev.filter((c) => c.source === "youtube").map(regeocode);
+      const merged = new Map();
+      for (const c of [...prevYt, ...windy]) if (c && !merged.has(c.id)) merged.set(c.id, c);
+      const fb = [...merged.values()];
+      if (fb.length > cameras.length) {
+        console.warn(`⚠ YouTubeクォータ超過→公開中カタログのYouTube ${prevYt.length}件を再ジオコーディングして再利用（+今回Windy ${windy.length}件）`);
+        cameras = fb;
+      }
+    }
+  }
+  // 既存カタログ保護: 0件、またはフォールバックでも回復できず不完全(<FLOOR)なら
+  // デプロイせず exit1 で中止（deploy.yml の後続 upload/deploy をスキップ＝直前の公開カタログを維持）。
   if (!cameras.length || (quotaHit && cameras.length < FLOOR)) {
     console.error(`✗ ${!cameras.length ? "生成0件" : `YouTubeクォータ超過で不完全(${cameras.length}件<${FLOOR})`}。既存カタログ保護のためデプロイ中止。`);
     process.exit(1);
