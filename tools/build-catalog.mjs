@@ -73,9 +73,13 @@ async function ytSearchIds(q) {
   const d=await ytJson("search",{part:"snippet",type:"video",eventType:"live",regionCode:"JP",relevanceLanguage:"ja",maxResults:"50",q});
   return (d.items||[]).map(i=>i?.id?.videoId).filter(Boolean);
 }
+let quotaHit = false; // YouTube日次クォータ/レート超過の検知。超過時は不完全なカタログで既存を上書きしない。
 async function ytVideosLive(ids) {
   const cams=[];
-  for (let i=0;i<ids.length;i+=50){ const d=await ytJson("videos",{part:"snippet,status,liveStreamingDetails",id:ids.slice(i,i+50).join(",")});
+  for (let i=0;i<ids.length;i+=50){
+    let d;
+    try { d=await ytJson("videos",{part:"snippet,status,liveStreamingDetails",id:ids.slice(i,i+50).join(",")}); }
+    catch(e){ if(e.reason==="quotaExceeded"||e.reason==="rateLimitExceeded"){ quotaHit=true; console.warn("  videos.list クォータ超過→以降スキップ"); break; } throw e; }
     for (const v of d.items||[]) {
       if (v?.snippet?.liveBroadcastContent!=="live") continue;
       const sn=v.snippet, title=sn.title||"(無題)";
@@ -105,8 +109,8 @@ async function ytVideosLive(ids) {
 async function fetchYouTube() {
   if (!YT_KEY) { console.warn("  (YOUTUBE_API_KEY未設定→YouTubeスキップ)"); return []; }
   const idSet=new Set();
-  for (const pid of PLAYLISTS) { try { (await ytPlaylistIds(pid)).forEach(id=>idSet.add(id)); } catch(e){ console.warn("  playlist失敗",pid,e.message); } }
-  for (const q of SEARCH_QUERIES) { try { (await ytSearchIds(q)).forEach(id=>idSet.add(id)); } catch(e){ console.warn("  search失敗",q,e.message); if(e.reason==="quotaExceeded")break; } }
+  for (const pid of PLAYLISTS) { try { (await ytPlaylistIds(pid)).forEach(id=>idSet.add(id)); } catch(e){ console.warn("  playlist失敗",pid,e.message); if(e.reason==="quotaExceeded"||e.reason==="rateLimitExceeded")quotaHit=true; } }
+  for (const q of SEARCH_QUERIES) { try { (await ytSearchIds(q)).forEach(id=>idSet.add(id)); } catch(e){ console.warn("  search失敗",q,e.message); if(e.reason==="quotaExceeded"||e.reason==="rateLimitExceeded"){quotaHit=true;break;} } }
   const cams=await ytVideosLive([...idSet]);
   console.log(`  YouTube: ライブ ${cams.length}件`);
   return cams;
@@ -155,13 +159,16 @@ async function main() {
   const byId=new Map();
   for (const c of [...yt, ...windy]) if (!byId.has(c.id)) byId.set(c.id, c);
   const cameras=[...byId.values()];
-  // 空カタログ保護: YouTubeクォータ超過や Windy 失敗で両ソース0件になった場合、
-  // 空の catalog.json で既存の公開カタログ(約1466件)を上書きデプロイし0件表示に転落するのを防ぐ。
-  // exit1 で Build step を失敗させ、deploy.yml の後続 upload/deploy をスキップ＝直前の公開カタログが残る。
-  if (!cameras.length) {
-    console.error("✗ 生成結果が0件。既存カタログ保護のためデプロイを中止します（YouTubeクォータ超過/Windy失敗の可能性）。");
+  // 既存カタログ保護: 0件、または YouTubeクォータ超過で大きく欠けた不完全カタログ(<FLOOR≒Windyのみ相当)は
+  // デプロイせず exit1 で中止（deploy.yml の後続 upload/deploy をスキップ＝直前の公開カタログを維持）。
+  // 通常は総数≈2,400件。クォータ超過で YouTube がほぼ0に落ちると Windy(~1,000)のみで FLOOR を下回る。
+  // クォータを終盤で超過し大半を確保できた場合(>=FLOOR)は、そのまま最新カタログとしてデプロイ続行。
+  const FLOOR = 1500;
+  if (!cameras.length || (quotaHit && cameras.length < FLOOR)) {
+    console.error(`✗ ${!cameras.length ? "生成0件" : `YouTubeクォータ超過で不完全(${cameras.length}件<${FLOOR})`}。既存カタログ保護のためデプロイ中止。`);
     process.exit(1);
   }
+  if (quotaHit) console.warn(`⚠ YouTubeクォータ超過だが${cameras.length}件確保→デプロイ続行`);
   const payload={ generatedAt:new Date().toISOString(), count:cameras.length, cameras };
   await writeFile(OUT, JSON.stringify(payload), "utf8");
   console.log(`✓ ${cameras.length}件を ${OUT} に出力`);
