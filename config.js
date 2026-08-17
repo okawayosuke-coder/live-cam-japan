@@ -524,6 +524,103 @@ export const DEFAULT_PLAYLISTS = [
   "UUpRCfnReHSQfLfnZxb5YSqQ", // JBハイウェイサービス株式会社
   "UUnVwMGjeDTN9CNqk89nxcJg", // 島民11人の島暮らし【でぃーぷまりん深島】
   "UU4e4gaT5BGXjIZ67pmAAb1w", // 松山市清掃施設課チャンネル
+  // --- 全国発掘 第3弾（2026-08・実効判定済み・中国地整河川/自治体防災ほか） ---
+  "UUUL1r_1rXZEYRovsnrZV4hQ", // 山陰ケーブルビジョン　サブちゃんねる
+  "UUxFMuvI5BKx00zH8IxpaQ2g", // 【島根県美郷町公式】ライブカメラCH
+  "UU6Md_M1SUOtrryYZC-NZTvA", // TSKライブカメラ
+  "UUagfXxy3O7noRW1xlCo5cCQ", // 黒坂ライブカメラ
+  "UUIXdQ-7gi2UObkYiaUhn8Qw", // 鳥取砂丘チャンネル
+  "UUCDCozZz1umL3bOH_WMa-4Q", // アイ・キャン制作G
+  "UUaeMPi5n_AJsMusYoKcfWwg", // 鳥取県米子市ライブカメラ
+  "UUhOBawAZ5qKd6vxbM3zbmdA", // つるがチャンネルLIVE
+  "UUINbBcbN6CPmqI8kp1WcLTA", // 河川映像配信ch4(広島県内)@国交省中国地整河川部
+  "UULoiPCAYF1zm5x8X_TtFqpQ", // 株式会社フォト・パブリッシング
+  "UUCkzfRzUHWaM7aTcVWuW6kw", // 道の駅越前おおの荒島の郷
+  "UUfqfhA7AQsCEjH8fU2tzF3A", // 福井県タクシー協会
+  "UUvsp21TYixwg_vbejtBh-Pg", // 上野学園ホール（広島県立文化芸術ホール）公式
+  "UUgYvSHFrrKoZ8Toq7g0tcag", // miobyDoTS【ミオバイドッツ】
+  "UUOgfxgmcZrpluvs3796NNRg", // HiroshimaUniv
+  "UUG7htRbYqeOf9HZWl86jsmQ", // 河川映像配信ch3(岡山県内)@国交省中国地整河川部
+  "UUltYUrT1mr15KFfeJy9mKRQ", // 河川映像配信ch5(山口県内)@国交省中国地整河川部
+  "UUI3BBj9L5hMz42ZEvs-LYhg", // 自然公園財団 鳥取支部 大山事業地
+  "UUKo2LUB9WylsN4zEwANbc2w", // 河川映像配信ch1(鳥取県内)@国交省中国地整河川部
+  "UUtLuiKE5mqWOtd6B5XrMVww", // 河川映像配信ch2(島根県内)@国交省中国地整河川部
+  "UUDFaAeHWz9GtSjCeEyv5xjA", // 御縁チャンネル【保護猫の猫宿、ゴールデンレトリバー日記】
+  "UUMBkpkdFghMYW6TQp7X77wA", // 石垣島ユーグレナ離島ターミナル側LIVEカメラ
+  "UUdrBonsvEq5cEsI3UrOwviw", // 正杰資訊有限公司 Jcomm Ltd.
+  "UU4JFp0Ndf5bBtBwYd2WiACA", // 風車小屋 - 瀬戸内海ライブ
+  "UUVMMnH7mTPksymujI9jwyjQ", // kogushi
+  "UUPC60SwUoYYkiQlBc0ULJPA", // CaaSちゃんねる　CaaS-AI
+  "UUCdKPqsk7bM62NUMCbHx_kA", // SKHN
+  "UUxlvjPrDJgz9JlPmbMOVBag", // 広島県尾道市東尾道ライブカメラ
+  "UUBTzVd-Ne0Ih7nT3ViP9Fqw", // TACHIOKAYA
+  "UUo3w8Yc05zmHHAmfX7gk_Nw", // aicafe
+  "UUUY22wZDhE6MM4E9F7139nQ", // KRY山口放送ニュース公式チャンネル
+  "UUZfeD1g0MGG3bbJKCapS5ug", // konchukan
+  "UUDuXIr1FaxcL45cfcJjJulg", // gion-unkai
+  "UUn99YdjhClqrN6yAHbIQKbw", // 大分市水害監視カメラ
+  "UU0tIwl3Ar4zRIuzsZi6QzYw", // 新潟市 西区 SUNSET
+  "UU0Cip1OyEnzqdL6nn6b3VaA", // 南房総いいとこどりライブカメラ
+  "UUwnL1oawHTCb7xZw0GzNnmw", // 波崎海洋研究施設
+  "UU-NuZ8QbpIIDK8ZhzsOyEpQ", // CAHAYA BULAN
+  "UUH11kp2h1ZtmAiZOLWY6pww", // 北海道利尻郡利尻町沓形泉町日本海ライブカメラ
+  "UU8Y5mMpRMNLlLWXM3BUKy6Q", // HMTV | Tokyo Bay Live & Archive
+  "UUOLGSHF7LfL-2svSfwsnOGQ", // e-CAM(イーカム)チャンネル
+  "UUegbJ370w3qoZYALUu0m6yA", // OLA GA TOCHI
+  "UUmq3RV8ZLTIv95YrusLyqhQ", // 豊橋市表浜海岸ライブカメラ
+  "UUyOcmwwnMTzupEakS2_CRig", // サンエス電気通信株式会社
+  "UUE5ajTJVTrsmxZJ-V3y8CLA", // ABA青森朝日放送
+  "UUT4jEYvUdpdN9oUALaypGfQ", // Amazing Taitung 台東就醬玩
+  "UUnB8WKKEBnfFre7vsPNSJsA", // 伊達市ライブカメラ
+  "UU5JpiO6tF8uRAZERl5dMcYQ", // 株式会社若狭組
+  "UUjkBGAGXUG-Y49BxshId2Ew", // 東京港クルーズターミナル
+  "UU6HD4NVe_LJslBs_j2h_11A", // ～南伊勢ええとこ～ 南伊勢町行政チャンネル
+  "UUT_iQ29Udk3XNwHJyPNMrEQ", // 与論町供利港ライブカメラ
+  "UU4K74vf5snEHSjYVfytMksw", // SBS（静岡放送）
+  "UUv5dlVv4ROVgedDbjVktOOA", // 日南テレビ!
+  "UUHhN8zJnQ9tHxue5EG-6C_Q", // 春日井市公式動画チャンネル(KasugaiCity)
+  "UUR8RKWznKgXXZSVUr54JNIw", // ベイコム公式YouTubeチャンネル
+  "UUdsNCWzRvVy51hWCcqqLOpA", // 志木防災
+  "UUVaygvAFK3dhX70IT61bghg", // HADANO-Bridge-View
+  "UUyoN_7A4wAhxT1lnkmDNyww", // 8 大和川水系 大和川 佐保川 曽我川
+  "UUmZsoFIhz3x2WD6RpgzBsVA", // 4 淀川水系 木津川
+  "UUXjqhxiyUIDNWF5qjYC6yCg", // ぐんまの道路ライブカメラ【中部地域2】
+  "UUaNkfi08z3Xo3IMEOqWaa2w", // 群馬県庁32階ライブカメラ
+  "UUtMHIWQqa1YK-mAKg3E2VOA", // 日本一の星空 長野県阿智村　ライブカメラ配信『日本一の星空 浪合パーク』
+  "UUgxPy1pKN9Ah5bj2W9KYvAw", // 徳島 眉山・阿波おどり Live Camera
+  "UUHJeBfnqnxCMbmReo_cxKKg", // 日本一の星空 長野県阿智村　ライブカメラ配信『天空の楽園 ヘブンスそのはら』
+  "UUSNjhJfI5FVXx8xSDjNJhXQ", // 竹田健康財団
+  "UUV8ozQObYE8PG1dGNttDkYg", // 群馬県太田市龍舞町ライブカメラ
+  "UUqVgSCGTFvklYcoMaU-tvaA", // 遠野テレビ【公式】Kacomuチャンネル
+  "UUc64ahhsLrWNH6XRlVXZFjQ", // 徳島県徳島市応神町古川戎子野ライブカメラ
+  "UUxgmra63vcFgLji9jhAad9A", // 住田町【公式】
+  "UU5TpCr5-eYaJ784Imt87n4Q", // 八千代市ライブカメラ LIVE YACHIYO
+  "UUmSLlWU4A_JEgGwXHF8qjNQ", // 熱海市道路状況公式チャンネル
+  "UUOnMCC5xCxGNKnFsT7hASIQ", // ライブカメラ山形
+  "UUag8gWmatJmyF6WTZAf6mbw", // 常総デザイン
+  "UUbC54g8cx22kk2w0eT-8qOQ", // 京都新聞
+  "UU5MNHWRJRJ1buoVIg2sHmCw", // Livetakayama
+  "UU9RIm5L_JmPnzSVX5F17CPQ", // セレクトちゃんねる
+  "UUGKQq1FLs5D2Z2XbSPLBcvQ", // 天草みぞかショップ
+  "UUQ015NynqGkmScpGKXbhCFw", // yagi norihiko
+  "UUayPdTOk9BFT4iwkwZOiDpw", // Visit Nakatsugawa【中津川市観光情報】
+  "UUJrDvNbGDWn0NcxhOyG8TmA", // 東京千鳥ヶ淵ライブカメラ
+  "UU_sNGzPVa-xQhfmuU-aOZmQ", // DTC技術部
+  "UUe0IyAHwKBq-ohmOxboQGEg", // 長野県軽井沢町1
+  "UUtjoCIS31JfpltaGOZgdFtw", // 和歌山県高野町
+  "UU693BB4qlwGfaqoMRsIyI4Q", // 日光市民病院
+  "UUYtOWbcS1F56y5SR7HFmjFg", // 志賀高原 横手山・渋峠
+  "UUcIywQS2c6bnzf27rg_xy3Q", // 小諸市公式チャンネル komorocity channel
+  "UU_wYNBMqbB1SOo7BbY2k-DA", // 富士見高原ゴルフコース
+  "UUGzmPMu9JG-u_zK82hc_g_w", // 夏油高原スキー場 / GETO KOGEN SKI RESORT
+  "UUrNNR-KdmbpaV-uP_E8UpUg", // ハチ高原【鉢伏山】Live Cam
+  "UU57srrDpMhtfYozG3fAHRMQ", // 霧ヶ峰高原ビバルデの丘
+  "UU7oOa4k0ct8rvJvMU8znyEg", // 伊豆天城リゾート公式チャンネル
+  "UUNt-rAHD7y9ErDC_cO-VfeA", // かみしほろスマートPASSチャンネル
+  "UUkO182m4Q6ixdAiK_PjBcjA", // 団地管理組合法人京王富士スバル高原別荘地第一次
+  "UUqptvzf0hRAA8lUdYLaPFmw", // 【公式】北海道北斗市役所
+  "UUANnelBFKc87b7yujShu75w", // 城島高原cam
+  "UUjWRnzuLd-LYnx7x71xemBw", // しらびそ高原
 ];
 
 // 既定の設定（localStorageに無ければこれを使う）
