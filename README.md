@@ -11,6 +11,7 @@
   |---|---|---|---|
   | YouTube Live | Data API でプレイリスト/検索 | `liveStreamingDetails` で **現在ライブ中だけ**採用（確定） | 無料APIキー |
   | Windy Webcams | ビルド時に全国カタログ生成＋playerをiframe埋め込み | `status=active` ＋ 更新時刻（報告ベース） | 無料APIキー |
+  | 河川カメラ（全国約1.1万） | 川の防災情報の公開JSON → `data/cameras.json`（`tools/fetch-river.mjs`・CIで8時間ごと更新） | 画像の全件確認で停止中（代替画像）を除外（報告ベース） | 不要 |
   | 直リンク/自治体 | `data/cameras.json` | `<img>` の読込成否で死活確認（確定） | 不要 |
 - **地図（Leaflet）＋カードグリッド**、地方/カテゴリ/ソース/キーワードで絞り込み
 - **APIキーはブラウザのlocalStorageにのみ保存**。外部送信なし
@@ -26,10 +27,13 @@ live-cam-japan/
 ├ sources.js          各ソースの取得＋生存プローブ
 ├ app.js              統合・描画・地図・ライブ判定
 ├ data/
-│  ├ cameras.json     直リンク/自治体カタログ（自分で追記）
+│  ├ catalog.json     公開用 YouTube/Windy カタログ（CIが生成・リポジトリ上はプレースホルダ）
+│  ├ cameras.json     河川カメラ（fetch-river.mjs が生成）＋直リンク/自治体カタログ（自分で追記）
 │  └ windy.json       fetch-windy.mjs が生成（初期は空）
 └ tools/
-   └ fetch-windy.mjs  Windy全国カタログ生成（Node）
+   ├ build-catalog.mjs 公開用カタログ生成（CIで実行・Node）
+   ├ fetch-river.mjs   全国の河川カメラ取得（川の防災情報・鍵不要・Node）
+   └ fetch-windy.mjs   Windy全国カタログ生成（Node）
 ```
 
 ## ローカルで動かす
@@ -70,6 +74,7 @@ node tools/fetch-windy.mjs      # → data/windy.json を生成（Node 18+）
 `data/cameras.json` の `cameras` 配列に追記します（`_schema` と `_example_entry` を参照）。
 **捏造データは入れない方針**です。`sourceUrl`（出典）と利用許諾を確認したカメラのみ追加してください。
 `embedType: "image"` の画像は、表示前にブラウザが読み込みテストし、**死んでいれば自動的に隠れます**。
+`id` が `kawabou-` で始まる河川カメラは `tools/fetch-river.mjs` が自動生成するので手で編集しないでください（それ以外の `id` で追加したカメラは自動生成でも保持されます）。
 
 ```json
 {

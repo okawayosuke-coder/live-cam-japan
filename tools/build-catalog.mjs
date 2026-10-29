@@ -8,15 +8,16 @@
 //
 //   YOUTUBE_API_KEY=xxx WINDY_API_KEY=yyy node tools/build-catalog.mjs
 //
-// クォータ安全設計: プレイリスト(1ユニット/ページ)中心＋検索は少数(8×100)。
-//   472再生リスト×最大2ページ＋videos.list＋検索 ≈ 2,000〜2,400ユニット/回。
-//   6時間ごと(4回/日)でも ≈ 8,000〜9,600/日（無料枠1万/日内・要監視。超過時は空カタログ保護で既存維持）。
+// クォータ安全設計: プレイリスト(1ユニット/ページ)中心＋検索は少数(16×100)。
+//   564再生リスト×最大2ページ＋videos.list＋検索 ≈ 2,700ユニット/回。
+//   8時間ごと(3回/日)で ≈ 8,100/日（無料枠1万/日内・要監視。超過時は空カタログ保護で既存維持）。
+// 一時障害(YouTube側5xx/backendError・通信タイムアウト)は再試行し、それでも駄目な分だけ飛ばす（ビルド全体は落とさない）。
 // Node 18+（グローバル fetch）。
 // ============================================================================
 import { writeFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
-import { REGIONS, regionOf, DEFAULT_PLAYLISTS } from "../config.js";
+import { REGIONS, regionOf, regionBoxes, DEFAULT_PLAYLISTS } from "../config.js";
 import { guessRegion, guessCategory, geocodeTitle } from "../geo.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -27,10 +28,10 @@ const WINDY_KEY = process.env.WINDY_API_KEY || "";
 
 // --- ビルド設定（クォータに合わせて調整可） ---
 // 再生リストは config.js の DEFAULT_PLAYLISTS を単一ソースとして共有（クライアントと一致）。
-// 115件＝全国網羅（北海道→沖縄＋河川防災/空港港湾/観光/サーフ）。
+// 564件＝全国網羅（北海道→沖縄＋河川防災/空港港湾/観光/サーフ）。
 const PLAYLISTS = DEFAULT_PLAYLISTS;
-// 検索は100ユニット/回と高価。チャンネル群(115)が地域網羅を担うので、検索は
-// 新規/未登録カメラの発見用に少数の広域クエリのみ（8クエリ×100=800ユニット）。
+// 検索は100ユニット/回と高価。チャンネル群(564)が地域網羅を担うので、検索は
+// 新規/未登録カメラの発見用に少数の広域クエリのみ（16クエリ×100=1,600ユニット）。
 const SEARCH_QUERIES = [
   "ライブカメラ", "富士山 ライブ", "海 ライブカメラ", "空港 ライブカメラ",
   "河川 ライブカメラ", "道路 ライブカメラ", "サーフ ライブカメラ", "live camera japan",
@@ -38,7 +39,7 @@ const SEARCH_QUERIES = [
   "湖 ライブカメラ", "温泉 ライブカメラ", "商店街 ライブカメラ", "展望台 ライブカメラ",
   "駅 ライブカメラ", "港 ライブカメラ", "夜景 ライブカメラ", "城 ライブカメラ",
 ];
-const PLAYLIST_PAGES = 2; // 1プレイリストあたり最大ページ数（50件/ページ）。472本に拡大したためクォータ配慮で2ページ（発掘時も2ページで実効確認済み）
+const PLAYLIST_PAGES = 2; // 1プレイリストあたり最大ページ数（50件/ページ）。500本超に拡大したためクォータ配慮で2ページ（発掘時も2ページで実効確認済み）
 
 // 検索が拾うノイズの除外。
 // ・EXCLUDE_CHANNELS: 海外カメラ/機種デモ/店内/地震速報専用 等（そのチャンネルに正規の地点カメラが無いものだけ）。
@@ -58,11 +59,27 @@ const EXCLUDE_TITLE_RX = /ニュースまとめ|昼のニュース|24H ?NEWS|NEW
 
 // ===== YouTube =====
 const YT = "https://www.googleapis.com/youtube/v3";
-async function ytJson(path, params) {
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+const FETCH_TIMEOUT_MS = 20000; // 応答が無い通信でジョブが止まり続けないように
+// 一時障害とみなして再試行する理由（2026-10 に backendError 1回でビルド全体が落ちる失敗が4回発生）
+const YT_TRANSIENT = new Set(["backendError", "internalError", "serviceUnavailable", "network"]);
+async function ytJson(path, params, tries = 3) {
   const usp = new URLSearchParams({ ...params, key: YT_KEY });
-  const res = await fetch(`${YT}/${path}?${usp}`);
-  if (!res.ok) { let r=`${res.status}`; try { const j=await res.json(); r=j?.error?.errors?.[0]?.reason||r; } catch {} const e=new Error(`YT ${path}: ${r}`); e.reason=r; throw e; }
-  return res.json();
+  for (let attempt = 1; ; attempt++) {
+    let e;
+    try {
+      const res = await fetch(`${YT}/${path}?${usp}`, { signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) });
+      if (res.ok) return await res.json(); // 本文の途中切れ等も catch 側で通信エラー扱い→再試行
+      let r=`${res.status}`; try { const j=await res.json(); r=j?.error?.errors?.[0]?.reason||r; } catch {}
+      e=new Error(`YT ${path}: ${r}`); e.reason=r; e.status=res.status;
+    } catch (x) {
+      e=new Error(`YT ${path}: ${x.name==="TimeoutError"?"timeout":x.message}`); e.reason="network";
+    }
+    const transient = YT_TRANSIENT.has(e.reason) || e.status >= 500;
+    if (!transient || attempt >= tries) throw e;
+    console.warn(`  ${e.message} → ${attempt}回目失敗、再試行`);
+    await sleep(1000 * 2 ** (attempt - 1)); // 1秒, 2秒
+  }
 }
 async function ytPlaylistIds(pid) {
   const ids=[]; let token="";
@@ -74,12 +91,16 @@ async function ytSearchIds(q) {
   return (d.items||[]).map(i=>i?.id?.videoId).filter(Boolean);
 }
 let quotaHit = false; // YouTube日次クォータ/レート超過の検知。超過時は不完全なカタログで既存を上書きしない。
+let ytSkipped = 0;    // 再試行しても取れず飛ばした videos.list の回数（50件単位）。不完全さの判定に quotaHit と併用。
 async function ytVideosLive(ids) {
   const cams=[];
   for (let i=0;i<ids.length;i+=50){
     let d;
     try { d=await ytJson("videos",{part:"snippet,status,liveStreamingDetails",id:ids.slice(i,i+50).join(",")}); }
-    catch(e){ if(e.reason==="quotaExceeded"||e.reason==="rateLimitExceeded"){ quotaHit=true; console.warn("  videos.list クォータ超過→以降スキップ"); break; } throw e; }
+    catch(e){
+      if(e.reason==="quotaExceeded"||e.reason==="rateLimitExceeded"){ quotaHit=true; console.warn("  videos.list クォータ超過→以降スキップ"); break; }
+      ytSkipped++; console.warn(`  videos.list ${i}〜${i+49}件目を飛ばす（${e.message}）`); continue; // 1回の障害でビルド全体を落とさない
+    }
     for (const v of d.items||[]) {
       if (v?.snippet?.liveBroadcastContent!=="live") continue;
       const sn=v.snippet, title=sn.title||"(無題)";
@@ -109,7 +130,16 @@ async function ytVideosLive(ids) {
 async function fetchYouTube() {
   if (!YT_KEY) { console.warn("  (YOUTUBE_API_KEY未設定→YouTubeスキップ)"); return []; }
   const idSet=new Set();
-  for (const pid of PLAYLISTS) { try { (await ytPlaylistIds(pid)).forEach(id=>idSet.add(id)); } catch(e){ console.warn("  playlist失敗",pid,e.message); if(e.reason==="quotaExceeded"||e.reason==="rateLimitExceeded")quotaHit=true; } }
+  for (const pid of PLAYLISTS) {
+    // playlistNotFound は実在する再生リストでも断続的に返る（2026-10 の調査で6件中4件が後で実在）→少し待って1回だけ再試行
+    for (let t=0;t<2;t++) {
+      try { (await ytPlaylistIds(pid)).forEach(id=>idSet.add(id)); break; }
+      catch(e){
+        if(e.reason==="playlistNotFound"&&t===0){ await sleep(2000); continue; }
+        console.warn("  playlist失敗",pid,e.message); if(e.reason==="quotaExceeded"||e.reason==="rateLimitExceeded")quotaHit=true; break;
+      }
+    }
+  }
   for (const q of SEARCH_QUERIES) { try { (await ytSearchIds(q)).forEach(id=>idSet.add(id)); } catch(e){ console.warn("  search失敗",q,e.message); if(e.reason==="quotaExceeded"||e.reason==="rateLimitExceeded"){quotaHit=true;break;} } }
   const cams=await ytVideosLive([...idSet]);
   console.log(`  YouTube: ライブ ${cams.length}件`);
@@ -121,7 +151,10 @@ const WINDY = "https://api.windy.com/webcams/api/v3/webcams";
 function windyCategory(cats=[]) { const ids=cats.map(c=>typeof c==="string"?c:c.id||"").join(" ").toLowerCase(); if(/(beach|harbor|harbour|sea|coast|island|bay|port)/.test(ids))return "coast"; if(/(mountain|ski|lake|forest|nature|volcano)/.test(ids))return "mountain"; if(/(traffic|highway|road)/.test(ids))return "road"; if(/(city|square|town|landmark|building)/.test(ids))return "city"; if(/(weather|sky)/.test(ids))return "weather"; if(/(river|dam)/.test(ids))return "river"; return "scenery"; }
 function windyToCamera(w) {
   const loc=w.location||{}, lat=loc.latitude??null, lng=loc.longitude??null, player=w.player||{}, hasLive=!!player.live;
-  const imgs=w.images||{}, active=(w.status||"").toLowerCase()==="active";
+  // 「active」申告でも画像が2日以上更新されていないものは実質停止（2026-10に申告active・画像は1週間前のカメラを確認）。
+  // 平常時のビルドでは全件が24時間以内の更新だったので、48時間なら正常なカメラは落とさない。
+  const stale=w.lastUpdatedOn && Date.now()-new Date(w.lastUpdatedOn).getTime()>48*3600e3;
+  const imgs=w.images||{}, active=(w.status||"").toLowerCase()==="active" && !stale;
   const place=[loc.city,loc.region,loc.country].filter(Boolean).join(", ");
   const updated=w.lastUpdatedOn?"・更新 "+new Date(w.lastUpdatedOn).toLocaleString("ja-JP"):"";
   return {
@@ -138,12 +171,17 @@ function windyToCamera(w) {
 async function fetchWindy() {
   if (!WINDY_KEY) { console.warn("  (WINDY_API_KEY未設定→Windyスキップ)"); return []; }
   const byId=new Map();
-  for (const r of REGIONS) {
-    for (let offset=0;offset<500;offset+=50) {
+  // 地方ごとの矩形＋飛び地（伊勢志摩など）を順に取得。重複は byId で除く。
+  for (const r of REGIONS.flatMap((g)=>regionBoxes(g).map((b)=>({...b,name:g.name})))) {
+    for (let offset=0;offset<500;offset+=50) { // 2026-10時点の最大は中部400件＝上限500で取りこぼしなし
       const usp=new URLSearchParams({bbox:`${r.n},${r.e},${r.s},${r.w}`,include:"categories,images,location,player,urls",limit:"50",offset:String(offset)});
-      const res=await fetch(`${WINDY}?${usp}`,{headers:{"x-windy-api-key":WINDY_KEY}});
-      if (!res.ok) { console.warn(`  Windy ${r.name} HTTP ${res.status}`); break; }
-      const data=await res.json(); const list=data.webcams||[];
+      let data;
+      try {
+        const res=await fetch(`${WINDY}?${usp}`,{headers:{"x-windy-api-key":WINDY_KEY},signal:AbortSignal.timeout(FETCH_TIMEOUT_MS)});
+        if (!res.ok) { console.warn(`  Windy ${r.name} HTTP ${res.status}`); break; }
+        data=await res.json();
+      } catch(e){ console.warn(`  Windy ${r.name} 通信失敗（${e.name==="TimeoutError"?"timeout":e.message}）→この地方の残りを飛ばす`); break; } // 例外でビルド全体を落とさない
+      const list=data.webcams||[];
       for (const w of list) { const c=windyToCamera(w); if (c.status!=="offline" && !byId.has(c.id)) byId.set(c.id,c); }
       if (list.length<50) break;
       await new Promise(x=>setTimeout(x,200));
@@ -179,32 +217,37 @@ async function main() {
   for (const c of [...yt, ...windy]) if (!byId.has(c.id)) byId.set(c.id, c);
   let cameras=[...byId.values()];
 
-  // 通常は総数≈2,400件。クォータ超過でYouTubeがほぼ0に落ちるとWindy(~1,000)のみでFLOORを下回る。
+  // 通常は総数≈2,500件。クォータ超過/障害でYouTubeがほぼ0に落ちるとWindy(~1,200)のみでFLOORを下回る。
   const FLOOR = 2000;
+  // YouTube取得が不完全か（日次クォータ超過、または再試行しても取れず飛ばした分がある）
+  const ytIncomplete = quotaHit || ytSkipped > 0;
+  if (ytSkipped) console.warn(`⚠ videos.list を ${ytSkipped}回分（最大${ytSkipped*50}件）飛ばした`);
 
-  // フォールバック: YouTubeクォータ超過で大きく欠けた場合、公開中カタログのカメラを
+  // フォールバック: YouTubeが大きく欠けた場合、公開中カタログのカメラを
   // 現在の geo.js で再ジオコーディングして再利用する（新鮮なWindyは今回分を使用）。
   // これで①サイトがWindyのみに転落しない ②geo.jsの辞書修正(座標是正)はクォータ枯渇中でも反映される。
-  if (quotaHit && cameras.length < FLOOR) {
+  // 再利用分の lastChecked は元のまま残る＝画面側で「最終確認から24時間超」を要確認として表示できる。
+  if (ytIncomplete && cameras.length < FLOOR) {
     const prev = await fetchDeployedCatalog();
     if (prev && prev.length) {
       const prevYt = prev.filter((c) => c.source === "youtube").map(regeocode);
       const merged = new Map();
-      for (const c of [...prevYt, ...windy]) if (c && !merged.has(c.id)) merged.set(c.id, c);
+      // 今回取れたYouTube(最新のライブ判定)を優先し、欠けた分だけ前回分で補う
+      for (const c of [...yt, ...prevYt, ...windy]) if (c && !merged.has(c.id)) merged.set(c.id, c);
       const fb = [...merged.values()];
       if (fb.length > cameras.length) {
-        console.warn(`⚠ YouTubeクォータ超過→公開中カタログのYouTube ${prevYt.length}件を再ジオコーディングして再利用（+今回Windy ${windy.length}件）`);
+        console.warn(`⚠ YouTube取得が不完全→今回のYouTube ${yt.length}件に、公開中カタログのYouTube ${prevYt.length}件(再ジオコーディング済み)で欠けを補う（+今回Windy ${windy.length}件）`);
         cameras = fb;
       }
     }
   }
   // 既存カタログ保護: 0件、またはフォールバックでも回復できず不完全(<FLOOR)なら
   // デプロイせず exit1 で中止（deploy.yml の後続 upload/deploy をスキップ＝直前の公開カタログを維持）。
-  if (!cameras.length || (quotaHit && cameras.length < FLOOR)) {
-    console.error(`✗ ${!cameras.length ? "生成0件" : `YouTubeクォータ超過で不完全(${cameras.length}件<${FLOOR})`}。既存カタログ保護のためデプロイ中止。`);
+  if (!cameras.length || (ytIncomplete && cameras.length < FLOOR)) {
+    console.error(`✗ ${!cameras.length ? "生成0件" : `YouTube取得が不完全(${cameras.length}件<${FLOOR})`}。既存カタログ保護のためデプロイ中止。`);
     process.exit(1);
   }
-  if (quotaHit) console.warn(`⚠ YouTubeクォータ超過だが${cameras.length}件確保→デプロイ続行`);
+  if (ytIncomplete) console.warn(`⚠ YouTube取得が不完全だが${cameras.length}件確保→デプロイ続行`);
   const payload={ generatedAt:new Date().toISOString(), count:cameras.length, cameras };
   await writeFile(OUT, JSON.stringify(payload), "utf8");
   console.log(`✓ ${cameras.length}件を ${OUT} に出力`);

@@ -8,13 +8,20 @@
 
 // 日本の8地方。bbox は [south, west, north, east]（Leaflet順）。
 // Windy API へは N,E,S,W の順で渡す（version-transfer ドキュメント準拠）。
+// extra = 本体の矩形どうしの隙間に落ちる飛び地（regionOf と Windy 取得の両方で regionBoxes() 経由で使う）。
 export const REGIONS = [
   { id: "hokkaido", name: "北海道",   s: 41.3, w: 139.3, n: 45.7, e: 146.1, center: [43.4, 142.8] },
   { id: "tohoku",   name: "東北",     s: 36.9, w: 139.0, n: 41.6, e: 142.2, center: [39.3, 140.6] },
   { id: "kanto",    name: "関東",     s: 34.9, w: 139.0, n: 37.2, e: 140.9, center: [35.9, 139.6] },
-  { id: "chubu",    name: "中部",     s: 34.5, w: 136.0, n: 37.7, e: 139.2, center: [36.2, 137.6] },
-  { id: "kinki",    name: "近畿",     s: 33.4, w: 134.5, n: 35.8, e: 136.6, center: [34.6, 135.6] },
-  { id: "chugoku",  name: "中国",     s: 33.7, w: 130.9, n: 35.7, e: 134.6, center: [34.7, 132.8] },
+  // n は佐渡島・新潟市西部の海沿い(37.8〜38.3)まで（旧37.7では どの地方にも入らず、地方で絞ると消え Windy も未取得だった）。
+  // 37.7〜38.6 × 136.0〜139.2 の帯は新潟県と日本海のみ。
+  { id: "chubu",    name: "中部",     s: 34.5, w: 136.0, n: 38.6, e: 139.2, center: [36.2, 137.6] },
+  // extra: 伊勢・鳥羽・志摩（近畿の東端136.6と中部の南端34.5の隙間）。近畿の e を単純に広げると知多半島(愛知)まで
+  // 近畿扱いになるため、北端34.66(知多先端34.68の手前)・東端136.99(伊良湖岬137.01の手前)の小矩形で埋める。
+  { id: "kinki",    name: "近畿",     s: 33.4, w: 134.5, n: 35.8, e: 136.6, center: [34.6, 135.6],
+    extra: [{ s: 33.7, w: 136.6, n: 34.66, e: 136.99 }] },
+  // n は隠岐諸島(36.0〜36.35)まで（旧35.7では隠岐がどの地方にも入らなかった）。広がる帯は隠岐と日本海のみ。
+  { id: "chugoku",  name: "中国",     s: 33.7, w: 130.9, n: 36.4, e: 134.6, center: [34.7, 132.8] },
   { id: "shikoku",  name: "四国",     s: 32.7, w: 132.0, n: 34.6, e: 134.9, center: [33.7, 133.5] },
   { id: "kyushu",   name: "九州・沖縄", s: 24.0, w: 122.9, n: 34.7, e: 132.1, center: [31.5, 130.5] },
   // 伊豆諸島〜小笠原（大島・新島・三宅島・八丈島・小笠原）。本州bboxの南の隙間を埋める。
@@ -106,7 +113,6 @@ export const DEFAULT_PLAYLISTS = [
   "UUciZ_EHzb6frW2WfFGCOX5g", // びわ湖放送（大津/琵琶湖）
   "UU6lmF6p8HDwPkI5PG1YO0Ng", // 草津駅ライブ（滋賀）
   "UUQaIJF9pcbAvVszZHTI-Kqw", // 鳥羽マリンターミナル（三重）
-  "UUDZ15oljFdnJJxcix-ZGEAw", // 志摩 国府白浜(machispo)サーフ
   "UUVEmpbL5VzfXsULPFeRsj4Q", // アドベンチャーワールド（和歌山・パンダ）
   // --- 中国 ---
   "UU9r31LvpWhWU0aJdAirOZDQ", // tysテレビ山口（下関/関門海峡）
@@ -126,7 +132,6 @@ export const DEFAULT_PLAYLISTS = [
   "UUsV_76RlGzFVZQABftUKdSw", // 四国地整 河川CCTV（吉野川/四万十川）
   "UUVbExwCBw3wr5vGGYe-cBPw", // 堀江マリンハウス（松山・瀬戸内）
   "UUOq4G6r489yBvnYh6F3_i-w", // CMSサンポート高松（香川）
-  "UU1AgIHd5nsX5oYXZLdcYB8Q", // サンポート高松（CMS専用）
   // --- 九州・沖縄 ---
   "UUpWU25qIleNLmUEF9VwBdMA", // 桜島(財宝)複数アングル
   "UU7f4czw8TuG69HuVt_uXRtQ", // 桜島(MBC南日本放送)垂水/錦江湾
@@ -709,11 +714,16 @@ export function saveSettings(patch) {
 // lat/lng がどの地方に属するか。
 // bboxは瀬戸内海(中国⇔四国)等で重複するため「先勝ち」だと松山/高松/八幡浜などの四国側が
 // 中国に誤ラベルされる。内包する全bboxのうち「地方中心が最も近い」ものを採用して正す。
+// 地方を覆う矩形の一覧（本体＋飛び地）。Windy の地方別取得もこれで回す。
+export function regionBoxes(r) {
+  return [{ s: r.s, w: r.w, n: r.n, e: r.e }, ...(r.extra || [])];
+}
+
 export function regionOf(lat, lng) {
   if (lat == null || lng == null) return null;
   let best = null, bestD = Infinity;
   for (const r of REGIONS) {
-    if (lat >= r.s && lat <= r.n && lng >= r.w && lng <= r.e) {
+    if (regionBoxes(r).some((b) => lat >= b.s && lat <= b.n && lng >= b.w && lng <= b.e)) {
       const [cy, cx] = r.center;
       const d = (lat - cy) ** 2 + (lng - cx) ** 2;
       if (d < bestD) { bestD = d; best = r.id; }

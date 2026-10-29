@@ -1,13 +1,19 @@
 // ============================================================================
 // app.js  ―  統合・描画・地図・ライブ判定
 // ============================================================================
-import { REGIONS, CATEGORIES, loadSettings, saveSettings } from "./config.js?v=7";
-import { fetchYouTube, fetchWindy, fetchDirect, probeImage } from "./sources.js?v=7";
+import { REGIONS, CATEGORIES, loadSettings, saveSettings } from "./config.js?v=8";
+import { fetchYouTube, fetchWindy, fetchDirect, probeImage } from "./sources.js?v=8";
 
 const $ = (sel) => document.querySelector(sel);
 const $$ = (sel) => Array.from(document.querySelectorAll(sel));
 
 const CARDS_PER_PAGE = 60; // 一覧の初期表示件数（「もっと見る」で追加）
+// YouTubeの「ライブ中」判定がこれより古い＝定期ビルド停止の疑い（通常は8時間ごとに更新）。
+// 2026-10 に定期実行が13日止まり、「稼働中」表示の27%が配信終了済みになっていた反省から。
+const STALE_MS = 24 * 60 * 60 * 1000;
+// 直リンク画像（河川カメラ等）をモーダルで開いている間の再取得間隔。
+// 川の防災情報の画像は約10分ごと更新・Cache-Control max-age=300 なので、5秒ごとは提供元への過剰負荷だった。
+const IMAGE_REFRESH_MS = 60 * 1000;
 
 const state = {
   settings: loadSettings(),
@@ -27,6 +33,7 @@ const SOURCE_LABEL = { youtube: "YouTube", windy: "Windy", direct: "直リンク
 const STATUS_META = {
   live:       { label: "稼働中",   cls: "ok",   color: "#22c55e" },
   reported:   { label: "稼働(報告)", cls: "rep",  color: "#14b8a6" },
+  stale:      { label: "要確認",   cls: "stale", color: "#f59e0b" }, // ライブ判定が24時間超前（配信終了の可能性）
   checking:   { label: "確認中…",  cls: "chk",  color: "#9ca3af" },
   unverified: { label: "未確認",   cls: "unv",  color: "#64748b" },
   offline:    { label: "停止",     cls: "off",  color: "#ef4444" },
@@ -47,7 +54,14 @@ function initMap() {
   state.map = map;
 }
 
+// アイコンは「状態×推定位置か」の十数通りしかないので使い回す（全国1万件超の再描画で毎回生成しない）
+const _iconCache = new Map();
 function markerIcon(status, approx) {
+  const key = `${status}|${approx ? 1 : 0}`;
+  if (!_iconCache.has(key)) _iconCache.set(key, buildMarkerIcon(status, approx));
+  return _iconCache.get(key);
+}
+function buildMarkerIcon(status, approx) {
   const c = (STATUS_META[status] || STATUS_META.unverified).color;
   // しずく形ピン（白フチ＋ドロップシャドウ）。明るい地図でも埋もれず地図記号として明確。
   // approx（推定位置）は白フチを点線にして正確座標と区別。
@@ -88,7 +102,15 @@ async function loadCatalog() {
   if (!res.ok) throw new Error("no catalog");
   const data = await res.json();
   state.catalogGeneratedAt = data.generatedAt || null;
-  return (data.cameras || []).map(reviveDates);
+  return (data.cameras || []).map(reviveDates).map(markStale);
+}
+// YouTubeの「ライブ中」はビルド時点の判定。最終確認(lastChecked)が STALE_MS より古いものは
+// 「要確認」に下げる（ビルド停止時だけでなく、クォータ枯渇時に前回分を再利用した場合も lastChecked が古いまま残る）。
+function markStale(c) {
+  if (c.source !== "youtube" || c.status !== "live") return c;
+  const t = c.lastChecked ? new Date(c.lastChecked).getTime() : NaN;
+  if (!(Date.now() - t > STALE_MS)) return c;
+  return { ...c, status: "stale", note: `ライブ確認は${relTime(c.lastChecked)}（定期更新が止まっている可能性）。配信が終了している場合があります` };
 }
 
 // ---- お気に入り（localStorage） ----
@@ -122,8 +144,16 @@ function renderSkeleton(n = 9) {
 // ---- データ取得（ソース到着ごとにストリーミング描画） ----
 async function loadAll({ force = false } = {}) {
   if (state.loading) return;
+  const s = state.settings;
+  // 鍵なし = 公開モード → ビルド時生成の静的カタログを読む（クライアントにキー不要・クォータ消費なし）
+  const deployed = !s.youtubeApiKey && !s.windyApiKey;
+  state.deployed = deployed; // 空状態の文言出し分け等で参照
+  // セッションキャッシュはAPIクォータ節約のためのもの＝鍵ありモードだけで使う。
+  // 公開モードは静的JSON（圧縮後数百KB）を毎回読む。キャッシュ経由だと公開データの生成時刻（鮮度表示）が
+  // 失われていたため（再読み込みで「公開データ X日前生成」が消える不具合）。
+  if (deployed) { try { sessionStorage.removeItem(CACHE_KEY); } catch (_) {} } // 旧版が残した数MBの保存分を掃除
   // キャッシュ命中（強制更新でなければ）
-  if (!force) {
+  if (!force && !deployed) {
     const c = readCache();
     if (c) {
       state.cameras = c.cams.map(reviveDates);
@@ -148,11 +178,7 @@ async function loadAll({ force = false } = {}) {
     state.cameras = [...byId.values()];
     render(); // 到着次第ストリーミング描画
   };
-  const s = state.settings;
   const onError = (src, msg) => { state.errors[src] = msg; render(); };
-  // 鍵なし = 公開モード → ビルド時生成の静的カタログを読む（クライアントにキー不要・クォータ消費なし）
-  const deployed = !s.youtubeApiKey && !s.windyApiKey;
-  state.deployed = deployed; // 空状態の文言出し分け等で参照
   const jobs = [];
   if (deployed) {
     jobs.push(loadCatalog().then(merge).catch(() => onError("catalog", "公開カタログ未生成（data/catalog.json）。ローカルは設定でAPIキーを追加")));
@@ -165,9 +191,12 @@ async function loadAll({ force = false } = {}) {
 
   await Promise.all(jobs);
   state.loading = false;
-  writeCache(state.cameras);
+  if (!deployed) writeCache(state.cameras);
   render();
   probeDirectImages();   // 直リンク画像を非同期に死活確認
+  // ローカル開発で何も取れなかったときだけ設定（APIキー入力）を促す。
+  // 旧実装は「起動0.8秒後に0件なら開く」で、回線が遅いと公開サイトの訪問者にもキー入力画面が出ていた。
+  if (deployed && !state.cameras.length && isLocalHost()) openSettings();
 }
 
 // 直リンク(image)カメラを順次プローブして status を更新
@@ -192,9 +221,10 @@ async function probeDirectImages() {
 // ---- フィルタ＆描画 --------------------------------------------------------
 function visibleCameras() {
   const f = state.filters;
+  // stale（要確認）は配信が続いている可能性も高い（2026-10の実測で73%は継続中）ので「稼働中のみ」でも残す
   const okStatuses = state.settings.onlyWorking
-    ? new Set(["live", "reported", "checking"])
-    : new Set(["live", "reported", "checking", "unverified", "offline"]);
+    ? new Set(["live", "reported", "stale", "checking"])
+    : new Set(["live", "reported", "stale", "checking", "unverified", "offline"]);
   return state.cameras.filter((c) => {
     if (f.fav && !isFav(c.id)) return false;
     if (!okStatuses.has(c.status)) return false;
@@ -209,11 +239,14 @@ function visibleCameras() {
   });
 }
 
-function statusRank(s) { return { live: 0, reported: 1, checking: 2, unverified: 3, offline: 4 }[s] ?? 9; }
+// stale（要確認のYouTube）は唯一の動画ソースで7割は配信継続中（2026-10実測）なので、静止画中心の reported より前に出す
+function statusRank(s) { return { live: 0, stale: 1, reported: 2, checking: 3, unverified: 4, offline: 5 }[s] ?? 9; }
 
 // フィルタ後→ステータス→名前 の確定順（render とカードのみ再描画で共有）
+// 比較器は使い回す（localeCompare(…,"ja") は呼ぶたびに作り直すため、1.4万件で約1.5倍遅かった）
+const titleCollator = new Intl.Collator("ja");
 function sortedVisible() {
-  return visibleCameras().sort((a, b) => statusRank(a.status) - statusRank(b.status) || a.title.localeCompare(b.title, "ja"));
+  return visibleCameras().sort((a, b) => statusRank(a.status) - statusRank(b.status) || titleCollator.compare(a.title, b.title));
 }
 
 function render() {
@@ -221,15 +254,17 @@ function render() {
   renderCards(cams);
   renderMarkers(cams);
   renderStats(cams);
+  renderStaleWarning();
 }
 
 function renderStats(cams) {
   const live = cams.filter((c) => c.status === "live").length;
   const rep = cams.filter((c) => c.status === "reported").length;
   const chk = cams.filter((c) => c.status === "checking").length;
+  const stale = cams.filter((c) => c.status === "stale").length;
   const total = state.cameras.length;
   let msg = (state.loading ? "取得中… " : "") +
-    `表示 ${cams.length}件（稼働確定 ${live} / 稼働報告 ${rep}${chk ? " / 確認中 " + chk : ""}）・取得総数 ${total}`;
+    `表示 ${cams.length}件（稼働確定 ${live} / 稼働報告 ${rep}${stale ? " / 要確認 " + stale : ""}${chk ? " / 確認中 " + chk : ""}）・取得総数 ${total}`;
   if (state.cacheAge != null) msg += `・キャッシュ${state.cacheAge}分前（更新ボタンで再取得）`;
   if (state.catalogGeneratedAt) msg += `・公開データ ${relTime(state.catalogGeneratedAt)}生成`;
   const errs = Object.entries(state.errors).filter(([, m]) => m);
@@ -238,6 +273,19 @@ function renderStats(cams) {
 }
 
 function setStatusBar(text) { const el = $("#statusbar"); el.textContent = text; el.title = text; /* 省略時も全文をホバーで確認可能に */ }
+
+// 「要確認」が1件でもあれば、状態バーより目立つ警告を出す（絞り込みに関係なく全体で判定）
+function renderStaleWarning() {
+  const el = $("#stalewarn");
+  if (!el) return;
+  const n = state.cameras.filter((c) => c.status === "stale").length;
+  el.hidden = !n;
+  if (n) {
+    const when = state.catalogGeneratedAt ? `（公開データは${relTime(state.catalogGeneratedAt)}に生成）` : "";
+    el.textContent = `⚠ YouTubeカメラ${n}件は、ライブ中の確認から24時間以上たっています${when}。` +
+      `「要確認」のカメラは配信が終了している場合があります。`;
+  }
+}
 
 function cardHtml(cam) {
   const sm = STATUS_META[cam.status] || STATUS_META.unverified;
@@ -438,14 +486,14 @@ function openModal(id) {
     mf.textContent = on ? "★ お気に入り" : "☆ お気に入り";
   });
   if (initYt) initYtPlayer(cam);
-  // 直リンク画像は数秒ごとに更新
+  // 直リンク画像は開いている間 IMAGE_REFRESH_MS ごとに更新（提供元の更新周期に合わせ、過剰に取りに行かない）
   if (cam.embedType === "image") {
     const img = $("#liveImg");
     state._imgTimer = setInterval(() => {
       const base = cam.imageUrl.split("?")[0];
       const q = cam.imageUrl.includes("?") ? cam.imageUrl.split("?")[1] + "&" : "";
       img.src = `${base}?${q}_lcj=${Date.now()}`;
-    }, 5000);
+    }, IMAGE_REFRESH_MS);
   }
 }
 // 開いているダイアログ内に Tab フォーカスを閉じ込める（背後の要素へ抜けさせない）
@@ -660,12 +708,16 @@ function safeUrl(u) {
   catch (_) { return ""; }
 }
 
+// ローカル開発（自分のPCの配信サーバー）で動いているか。index.html の config.local.js 読込判定と同じ基準。
+function isLocalHost() {
+  const host = location.hostname;
+  return host === "localhost" || host === "127.0.0.1" || host === "" || host === "::1" || host === "[::1]";
+}
+
 // 公開ドメインで動いている場合、ブラウザにAPIキーが露出する旨を警告
 function maybeWarnKeyExposure() {
-  const host = location.hostname;
-  const isLocal = host === "localhost" || host === "127.0.0.1" || host === "" || host === "::1";
   const el = $("#keywarn");
-  if (el && !isLocal && (state.settings.youtubeApiKey || state.settings.windyApiKey)) el.hidden = false;
+  if (el && !isLocalHost() && (state.settings.youtubeApiKey || state.settings.windyApiKey)) el.hidden = false;
 }
 
 // ---- 起動 ------------------------------------------------------------------
@@ -679,9 +731,6 @@ function boot() {
   // 自動更新（設定 autoRefreshMin 分ごと・タブ非表示/取得中はスキップ）
   const mins = Number(state.settings.autoRefreshMin) || 0;
   if (mins > 0) setInterval(() => { if (!document.hidden && !state.loading) loadAll({ force: true }); }, mins * 60000);
-  // 初回でキー未設定なら設定を促す
-  if (!state.settings.youtubeApiKey && !state.settings.windyApiKey) {
-    setTimeout(() => { if (!state.cameras.length) openSettings(); }, 800);
-  }
+  // （キー未設定時の設定案内は loadAll 完了後に、ローカルかつ0件のときだけ行う）
 }
 boot();

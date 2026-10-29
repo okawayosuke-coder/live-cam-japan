@@ -2,12 +2,17 @@ name: Build catalog & Deploy to Pages
 
 on:
   schedule:
-    - cron: "0 */8 * * *"   # 8時間ごとに更新（470再生リスト×2ページ＋16検索≈2,700ユニット/回×3回/日≈8,200/日・無料枠1万内）。Windyは別枠
+    - cron: "0 */8 * * *"   # 8時間ごとに更新（564再生リスト×2ページ＋16検索≈2,700ユニット/回×3回/日≈8,100/日・無料枠1万内）。Windyは別枠
   push:
     branches: [main]
-    paths-ignore:           # ドキュメントのみの更新ではカタログ再ビルド(≈1,100ユニット)を走らせない
+    paths-ignore:           # ドキュメントのみの更新ではカタログ再ビルド(≈2,700ユニット)を走らせない
       - '**/*.md'
   workflow_dispatch:        # 手動実行も可
+    inputs:
+      keepalive:
+        description: "キープアライブの空コミットだけを今すぐ実行（動作確認用・ビルドはしない）"
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -20,16 +25,17 @@ concurrency:
 
 jobs:
   build-deploy:
+    if: ${{ !inputs.keepalive }}
     runs-on: ubuntu-latest
     environment:
       name: github-pages
       url: ${{ steps.deploy.outputs.page_url }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
-          node-version: "20"
+          node-version: "24"
 
       - name: Build catalog (keys are CI secrets only — never sent to clients)
         env:
@@ -37,14 +43,43 @@ jobs:
           WINDY_API_KEY: ${{ secrets.WINDY_API_KEY }}
         run: node tools/build-catalog.mjs
 
-      - uses: actions/configure-pages@v5
+      # 全国の河川カメラ（川の防災情報・鍵不要）を取り直し、停止中（代替画像）を判定して配信物の data/cameras.json を最新化。
+      # 失敗しても（提供元障害・接続制限など）ツールは書き込まずに終わるので、リポジトリの取得済みデータをそのまま配信する。
+      - name: Refresh river cameras (falls back to the committed snapshot on failure)
+        continue-on-error: true
+        run: node tools/fetch-river.mjs
+
+      - uses: actions/configure-pages@v6
         with:
           enablement: true
 
       - name: Upload site (static files + generated data/catalog.json)
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v5
         with:
           path: "."
 
       - id: deploy
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
+
+  # 公開リポジトリは「60日間リポジトリに動きが無い」と定期実行が自動停止される（2026-10-16 に実際に停止）。
+  # 最終コミットから30日を超えたら空コミットを1つ積んで動きを作る。GITHUB_TOKEN による push は
+  # 新たなワークフローを起動しない仕様なので、この空コミットで余計なビルド（クォータ消費）は走らない。
+  keepalive:
+    if: ${{ github.event_name == 'schedule' || inputs.keepalive }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: 最終コミットから30日超なら空コミット
+        env:
+          FORCE: ${{ inputs.keepalive && 'true' || 'false' }}
+        run: |
+          age=$(( ( $(date +%s) - $(git log -1 --format=%ct) ) / 86400 ))
+          echo "最終コミットから ${age} 日"
+          if [ "$age" -lt 30 ] && [ "$FORCE" != "true" ]; then echo "30日未満のため何もしない"; exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit --allow-empty -m "chore: keepalive（60日無活動による定期実行の自動停止を防ぐ）"
+          git push

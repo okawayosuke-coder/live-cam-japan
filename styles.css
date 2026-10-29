@@ -126,6 +126,9 @@ body {
 .keywarn { background: #5a1d1d; color: #ffd7d7; border-bottom: 1px solid #7a2a2a; padding: 8px 16px; font-size: 12.5px; line-height: 1.6; }
 .keywarn[hidden] { display: none; }
 .keywarn strong { color: #fff; }
+/* YouTubeのライブ確認が古い（定期更新停止の疑い）警告バナー */
+.stalewarn { background: #4a3305; color: #fde7b0; border-bottom: 1px solid #7a560c; padding: 8px 16px; font-size: 12.5px; line-height: 1.6; }
+.stalewarn[hidden] { display: none; }
 .badge {
   position: absolute; top: 8px; left: 8px;
   font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 999px;
@@ -133,6 +136,7 @@ body {
 }
 .badge.ok { background: var(--ok); }
 .badge.rep { background: var(--rep); }
+.badge.stale { background: #f59e0b; }                  /* 要確認（濃色文字 #05101d とのコントラスト比 8.9:1＝AA適合） */
 .badge.chk { background: var(--chk); color: #1a2433; }
 .badge.unv { background: #475569; color: #e7eef8; }   /* AA 4.5:1 確保（--unv #64748b は未達） */
 .badge.off { background: #dc2626; color: #fff; }       /* AA 4.5:1 確保（--off #ef4444 は未達） */

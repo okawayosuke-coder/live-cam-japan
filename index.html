@@ -42,6 +42,7 @@
   </header>
 
   <div id="statusbar" class="statusbar" role="status" aria-live="polite">起動中…</div>
+  <div id="stalewarn" class="stalewarn" role="alert" hidden></div>
   <div id="keywarn" class="keywarn" hidden>⚠ 公開環境で動作中：ブラウザにAPIキーが露出します。Google Cloud / Windy のコンソールでキーに<strong>ドメイン/リファラ制限</strong>を設定してください。</div>
 
   <main class="layout">
@@ -110,9 +111,14 @@
           integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
   <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"
           integrity="sha256-Hk4dIpcqOSb0hZjgyvFOP+cEmDXUKKNE/tT542ZbNQg=" crossorigin=""></script>
-  <!-- ローカル専用のキー設定（任意・gitignore済み）。編集が即反映されるようキャッシュ回避で読み込む。無ければ404が出るだけで動作に影響なし -->
-  <script>document.write('<script src="./config.local.js?cb=' + Date.now() + '"><\/script>');</script>
-  <script type="module" src="./app.js?v=7"></script>
+  <!-- ローカル専用のキー設定（任意・gitignore済み）。編集が即反映されるようキャッシュ回避で読み込む。
+       公開サイトには存在しないファイルなので、ローカル（自分のPCの配信サーバー）のときだけ読む（毎回の404を出さない） -->
+  <script>
+    if (["localhost", "127.0.0.1", "", "::1", "[::1]"].includes(location.hostname)) {
+      document.write('<script src="./config.local.js?cb=' + Date.now() + '"><\/script>');
+    }
+  </script>
+  <script type="module" src="./app.js?v=8"></script>
   <!-- PWA: Service Worker（ネットワーク優先・オフライン時のみキャッシュ） -->
   <script>
     if ("serviceWorker" in navigator) {

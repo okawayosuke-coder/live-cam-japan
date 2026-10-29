@@ -17,8 +17,8 @@
 // }
 // ============================================================================
 
-import { regionOf } from "./config.js?v=7";
-import { guessRegion, guessCategory, geocodeTitle } from "./geo.js?v=7";
+import { regionOf, regionBoxes } from "./config.js?v=8";
+import { guessRegion, guessCategory, geocodeTitle } from "./geo.js?v=8";
 
 // ---- 生存プローブ（直リンク画像） -----------------------------------------
 // CORSの影響を受けない <img> 読み込みで死活確認。読めれば稼働、エラー/timeoutで停止。
@@ -241,7 +241,9 @@ function windyToCamera(w) {
     (w.webcamId ? `https://webcams.windy.com/webcams/public/embed/player/${w.webcamId}/day` : null);
   const imgs = w.images || {};
   const thumb = imgs.current?.preview || imgs.current?.thumbnail || imgs.daylight?.preview || null;
-  const active = (w.status || "").toLowerCase() === "active";
+  // 「active」申告でも画像が2日以上更新されていないものは実質停止（build-catalog.mjs と同基準）
+  const stale = w.lastUpdatedOn && Date.now() - new Date(w.lastUpdatedOn).getTime() > 48 * 3600e3;
+  const active = (w.status || "").toLowerCase() === "active" && !stale;
   const place = [loc.city, loc.region, loc.country].filter(Boolean).join(", ");
   const updated = w.lastUpdatedOn ? "・更新 " + new Date(w.lastUpdatedOn).toLocaleString("ja-JP") : "";
   return {
@@ -267,12 +269,12 @@ function windyToCamera(w) {
   };
 }
 
-// ブラウザから各地方bboxを直接叩く（CORSが通れば最新・通らなければcatchで握りつぶす）。
-// limitは最大50なのでoffsetでページングし、地方あたり最大250件まで取得する。
+// ブラウザから各地方bbox（＋飛び地）を直接叩く（CORSが通れば最新・通らなければcatchで握りつぶす）。
+// limitは最大50なのでoffsetでページングし、矩形あたり最大500件まで取得する。
 async function windyClientFetch(settings, regions) {
   const key = settings.windyApiKey.trim();
   const byId = new Map();
-  for (const r of regions) {
+  for (const r of regions.flatMap(regionBoxes)) {
     for (let offset = 0; offset < 500; offset += 50) {
       const usp = new URLSearchParams({
         bbox: `${r.n},${r.e},${r.s},${r.w}`, // N,E,S,W
@@ -371,7 +373,7 @@ export async function fetchDirect(onError) {
       // cameras.json で status を明示した場合は尊重（大量ソースはプローブ省略＝"reported"）。
       // 未指定の画像は従来どおり "checking"→クライアントで死活確認。
       status: c.status || (embedType === "image" ? "checking" : "reported"),
-      note: c.credit ? `出典: ${c.credit}` : "",
+      note: [c.note, c.credit && `出典: ${c.credit}`].filter(Boolean).join("／"), // 停止理由など＋出典
       lastChecked: null,
       // 出典・ライセンス表示用
       credit: c.credit || null,

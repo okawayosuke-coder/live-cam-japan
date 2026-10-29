@@ -5,10 +5,10 @@
 //       → コード更新が即反映され「古いキャッシュで動く」問題を起こさない。
 // 対象: 同一オリジンのGETのみ。YouTube/Windy/地図タイル等の外部は素通し。
 // ============================================================================
-const CACHE = "lcj-shell-v7";
+const CACHE = "lcj-shell-v8";
 const SHELL = [
   "./", "./index.html", "./styles.css",
-  "./app.js?v=7", "./config.js?v=7", "./sources.js?v=7", "./geo.js?v=7",
+  "./app.js?v=8", "./config.js?v=8", "./sources.js?v=8", "./geo.js?v=8",
   "./manifest.webmanifest", "./icon.svg",
 ];
 

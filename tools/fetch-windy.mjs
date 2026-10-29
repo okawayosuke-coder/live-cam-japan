@@ -13,7 +13,7 @@
 import { writeFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
-import { REGIONS } from "../config.js";
+import { REGIONS, regionBoxes } from "../config.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const OUT = join(__dirname, "..", "data", "windy.json");
@@ -30,8 +30,8 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 async function fetchRegion(r) {
   const found = [];
-  // limitは最大50。offsetでページング（最大5ページ=250件/地方）
-  for (let offset = 0; offset < 250; offset += 50) {
+  // limitは最大50。offsetでページング（最大10ページ=500件/矩形。build-catalog.mjs と同じ上限）
+  for (let offset = 0; offset < 500; offset += 50) {
     const usp = new URLSearchParams({
       bbox: `${r.n},${r.e},${r.s},${r.w}`, // N,E,S,W
       include: "categories,images,location,player,urls",
@@ -55,7 +55,8 @@ async function fetchRegion(r) {
 async function main() {
   console.log(`Windy Webcams 取得開始（${REGIONS.length}地方）…`);
   const byId = new Map();
-  for (const r of REGIONS) {
+  // 地方ごとの矩形＋飛び地（伊勢志摩など）を順に取得
+  for (const r of REGIONS.flatMap((g) => regionBoxes(g).map((b) => ({ ...b, name: g.name })))) {
     try {
       const cams = await fetchRegion(r);
       let active = 0;
