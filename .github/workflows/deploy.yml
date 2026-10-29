@@ -47,7 +47,10 @@ jobs:
       # 失敗しても（提供元障害・接続制限など）ツールは書き込まずに終わるので、リポジトリの取得済みデータをそのまま配信する。
       - name: Refresh river cameras (falls back to the committed snapshot on failure)
         continue-on-error: true
-        run: node tools/fetch-river.mjs
+        # 15分で打ち切り（終了コード124＝通常の失敗→continue-on-error で次へ進み、取得済みデータを配信）。
+        # timeout-minutes はその保険（時間切れと continue-on-error の組合せは公式文書に明記がないため主にしない）。
+        timeout-minutes: 20
+        run: timeout 15m node tools/fetch-river.mjs
 
       - uses: actions/configure-pages@v6
         with:

@@ -75,13 +75,22 @@ function toCamera(c) {
 
 // 画像を HEAD で全件確認（本文は取らない）。代替画像(PNG)のカメラは停止扱いにする。
 // 通信エラーで確認できなかったものは従来どおり "reported" のまま（停止と断定しない）。
-// 同時3本＝1万件で約4分。提供元への負荷を抑えるため並列数は増やさない。
+// 提供元への負荷は「1秒あたりの件数」で決まるので、同時8本で往復の遅さを隠しつつ全体を毎秒30件までに抑える
+// （1.1万件で約6分半。国内からでも米国のCIからでもほぼ同じ時間・同じ負荷）。
+const CHECK_PER_SEC = 30;
 async function markUnavailable(cameras) {
-  let i = 0, off = 0, unknown = 0;
+  let i = 0, off = 0, unknown = 0, nextSlot = Date.now();
   const sizes = new Map();
+  // 時間の上限（提供元が遅い等で終わらないと、CIのデプロイが止まる）。
+  // 超えた分は確認不能として数える＝多ければ下の2割ルールで書き込み中止→取得済みデータを配信。
+  const deadline = Date.now() + Number(process.env.RIVER_CHECK_BUDGET_MS || 12 * 60 * 1000);
   async function worker() {
     while (i < cameras.length) {
+      if (Date.now() > deadline) { unknown += cameras.length - i; i = cameras.length; break; }
       const c = cameras[i++];
+      const slot = Math.max(Date.now(), nextSlot); // 全ワーカー共通の発射時刻枠（毎秒 CHECK_PER_SEC 件）
+      nextSlot = slot + 1000 / CHECK_PER_SEC;
+      if (slot > Date.now()) await sleep(slot - Date.now());
       try {
         const res = await fetch(c.imageUrl, { method: "HEAD", headers: { "User-Agent": "Mozilla/5.0 (live-cam-japan)" }, signal: AbortSignal.timeout(15000) });
         const type = res.headers.get("content-type") || "";
@@ -94,7 +103,7 @@ async function markUnavailable(cameras) {
       } catch (_) { unknown++; }
     }
   }
-  await Promise.all(Array.from({ length: 3 }, worker));
+  await Promise.all(Array.from({ length: 8 }, worker));
   // 代替画像は 30685 バイト固定だった。違うサイズの PNG が出たら仕様変更の可能性があるので知らせる
   const odd = [...sizes].filter(([len]) => len !== "30685");
   console.log(`  画像確認: 停止(代替画像) ${off}件・確認できず ${unknown}件` + (odd.length ? `・⚠ 想定外サイズのPNG ${JSON.stringify(odd)}` : ""));
